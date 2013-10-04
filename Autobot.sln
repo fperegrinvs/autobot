@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Autobot.Server", "Autobot.Server\Autobot.Server.csproj", "{8484EA64-8AA1-4A52-9AE5-332959CF890F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Autobot.Client", "Autobot.Client\Autobot.Client.csproj", "{6C2C747C-4D52-4E0D-A808-E0A00D5173E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Autobot.Common", "Autobot.Common\Autobot.Common.csproj", "{8511D714-6532-4C11-8489-2C024A46E79A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Autobot.Brick", "Autobot.Brick\Autobot.Brick.csproj", "{24BBF6C1-E45B-4D10-9F53-53ADA948CCA2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{24BBF6C1-E45B-4D10-9F53-53ADA948CCA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24BBF6C1-E45B-4D10-9F53-53ADA948CCA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24BBF6C1-E45B-4D10-9F53-53ADA948CCA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24BBF6C1-E45B-4D10-9F53-53ADA948CCA2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C2C747C-4D52-4E0D-A808-E0A00D5173E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C2C747C-4D52-4E0D-A808-E0A00D5173E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C2C747C-4D52-4E0D-A808-E0A00D5173E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C2C747C-4D52-4E0D-A808-E0A00D5173E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8484EA64-8AA1-4A52-9AE5-332959CF890F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8484EA64-8AA1-4A52-9AE5-332959CF890F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8484EA64-8AA1-4A52-9AE5-332959CF890F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8484EA64-8AA1-4A52-9AE5-332959CF890F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8511D714-6532-4C11-8489-2C024A46E79A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8511D714-6532-4C11-8489-2C024A46E79A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8511D714-6532-4C11-8489-2C024A46E79A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8511D714-6532-4C11-8489-2C024A46E79A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = Autobot.Server\Autobot.Server.csproj
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

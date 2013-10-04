@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="Connect">Conectar</string>
+    <string name="ApplicationName">Autobot Client</string>
+    <string name="IpHint">Ip do cliente</string>
+    <string name="Search">Buscar</string>
+</resources>

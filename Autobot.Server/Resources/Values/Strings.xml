@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="On">Ligar</string>
+    <string name="Off">Desligar</string> 
+    <string name="ApplicationName">Antobot Server</string>
+</resources>
