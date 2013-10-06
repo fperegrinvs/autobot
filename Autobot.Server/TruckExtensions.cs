@@ -4,6 +4,8 @@ namespace Autobot.Server
     using System.Collections.Generic;
     using System.Threading;
 
+    using Android.Locations;
+
     using Autobot.Common;
 
     using Autotob.Brick.EV3;
@@ -35,6 +37,36 @@ namespace Autobot.Server
             while (motor.IsRunning()) { Thread.Sleep(50); }
         }
 
+        public static void Speed(
+            this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3, int speed)
+        {
+            //if (speed > 0)
+            //{
+            ev3.Vehicle.Forward(Convert.ToSByte(speed));
+            //}
+            //else
+            //{
+            //    ev3.Vehicle.Backward(Convert.ToSByte(speed * -1));
+            //}
+        }
+
+        public static void Turn(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3, int turn, int speed)
+        {
+            ev3.Vehicle.TurnRightForward(Convert.ToSByte(speed), Convert.ToSByte(turn));
+
+            //if (speed > 0)
+            //{
+            //    if (turn < 0)
+            //    {
+            //    }
+            //}
+            //byte power = 30;
+            //var current = ev3.MotorA.GetTachoCount();
+            //var desired = Convert.ToInt32((turn * 0.8));
+
+            //ev3.MotorA.MoveTo(power, desired, true);
+        }
+
         /// <summary>
         /// Andando pra frente
         /// </summary>
@@ -43,10 +75,9 @@ namespace Autobot.Server
         /// <param name="power"></param>
         public static void Forward(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3, double distance = 1, sbyte power = 80)
         {
-            var originalAngle = ev3.Data.Direction / 180 * Math.PI;
+            ev3.Vehicle.Forward(power, Convert.ToUInt16(Math.Round(360 * distance, 0)), false, true);
 
-            ev3.MotorC.On(power, Convert.ToUInt32(360 * distance), true);
-            WaitForMotorToStop(ev3.MotorA);
+            var originalAngle = ev3.Data.Direction / 180 * Math.PI;
 
             // atualizando posição
             var finalAngle = ev3.Data.Direction / 180 * Math.PI;
@@ -85,16 +116,14 @@ namespace Autobot.Server
             Forward(ev3, distance, power);
         }
 
-        public static void Left(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3)
+        public static void Left(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3, double distance = 1, sbyte power = 80)
         {
-            ev3.MotorA.On(10, 90, true);
-            WaitForMotorToStop(ev3.MotorA);
+            ev3.Vehicle.TurnLeftForward(80, 100, Convert.ToUInt16(Math.Round(360 * distance, 0)), false, true);
         }
 
-        public static void Right(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3)
+        public static void Right(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3, double distance = 1, sbyte power = 80)
         {
-            ev3.MotorA.On(-10, 90, true);
-            WaitForMotorToStop(ev3.MotorA);
+            ev3.Vehicle.TurnRightForward(80, 100, Convert.ToUInt16(Math.Round(360 * distance, 0)), false, true);
         }
 
         public static List<int> Sense(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3)
@@ -103,18 +132,18 @@ namespace Autobot.Server
             const int Size = 360 / (int)Angle;
             var map = new List<int>(Size);
 
-            ev3.MotorB.On(-10, 180, true);
-            ev3.MotorB.WaitForMotorToStop();
+            ev3.MotorA.On(-10, 180, true);
+            ev3.MotorA.WaitForMotorToStop();
 
             for (var i = 0; i < Size; i++)
             {
                 map.Add(ev3.Sensor1.Read());
-                ev3.MotorB.On(10, Angle, true);
-                ev3.MotorB.WaitForMotorToStop();
+                ev3.MotorA.On(10, Angle, true);
+                ev3.MotorA.WaitForMotorToStop();
             }
 
-            ev3.MotorB.On(-10, 180, true);
-            ev3.MotorB.WaitForMotorToStop();
+            ev3.MotorA.On(-10, 180, true);
+            ev3.MotorA.WaitForMotorToStop();
 
             return map;
         }

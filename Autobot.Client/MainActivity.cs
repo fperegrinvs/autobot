@@ -79,6 +79,13 @@
                 this.SendMessage(message);
             };
 
+            var center = this.FindViewById<Button>(Resource.Id.Center);
+            center.Click += delegate
+            {
+                var message = new Message() { Command = MessageType.Center };
+                this.SendMessage(message);
+            };
+
             var right = this.FindViewById<Button>(Resource.Id.RightButton);
             right.Click += delegate
             {

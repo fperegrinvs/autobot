@@ -60,6 +60,7 @@ namespace Autobot.Server
             }
         }
 
+        private DateTime LastCommand { get; set; }
 
         /// <summary>
         /// Receive message
@@ -71,6 +72,7 @@ namespace Autobot.Server
             {
                 var clientSocket = (Socket)ar.AsyncState;
                 clientSocket.EndReceive(ar);
+                LastCommand = DateTime.Now;
 
                 var msgReceived = new Message(this.byteData);
 
@@ -84,26 +86,68 @@ namespace Autobot.Server
                 // process the message and get the response
                 switch (msgReceived.Command)
                 {
+                    case MessageType.Speed:
+                        Bot.Speed(msgReceived.Parameter1);
+                        break;
+                    case MessageType.Turn:
+						Bot.Turn(msgReceived.Parameter1, msgReceived.Parameter2);
+                        break;
                     case MessageType.Forward:
-                        Bot.Forward(msgReceived.Parameter1);
+                    {
+                        var distance = msgReceived.Parameter1;
+                        var power = Convert.ToSByte(msgReceived.Parameter2);
+                        if (distance == 0)
+                        {
+                            distance = 1;
+                        }
+                        
+                        if (power == 0)
+                        {
+                            power = 20;
+                        }
+
+                        Bot.Forward(distance, power);
                         msgToSend.Command = MessageType.Ack;
                         break;
+                    }
                     case MessageType.Back:
-                        Bot.Back(msgReceived.Parameter1);
+                    {
+                        var distance = msgReceived.Parameter1;
+                        var power = Convert.ToSByte(msgReceived.Parameter2);
+                        if (distance == 0)
+                        {
+                            distance = 1;
+                        }
+
+                        if (power == 0)
+                        {
+                            power = 20;
+                        }
+
+                        Bot.Back(distance, power);
                         msgToSend.Command = MessageType.Ack;
                         break;
+                    }
                     case MessageType.Center:
                         Bot.Center();
                         msgToSend.Command = MessageType.Ack;
                         break;
                     case MessageType.Left:
-                        Bot.Left();
+                    {
+                        var distance = msgReceived.Parameter1 > 0 ? msgReceived.Parameter1 / 100 : 1;
+                        var power = msgReceived.Parameter2 != 0 ? msgReceived.Parameter2 : 80;
+                        Bot.Left(distance, Convert.ToSByte(power));
                         msgToSend.Command = MessageType.Ack;
                         break;
+                    }
                     case MessageType.Right:
-                        Bot.Right();
+                    {
+                        var distance = msgReceived.Parameter1 > 0 ? msgReceived.Parameter1 / 100 : 1;
+                        var power = msgReceived.Parameter2 != 0 ? msgReceived.Parameter2 : 80;
+                        Bot.Right(distance, Convert.ToSByte(power));
                         msgToSend.Command = MessageType.Ack;
                         break;
+                    }
                     case MessageType.Sense:
                         var result = Bot.Sense();
                         msgToSend.Data = new byte[result.Count * 4];

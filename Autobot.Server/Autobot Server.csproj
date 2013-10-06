@@ -20,7 +20,6 @@
     <MandroidI18n />
     <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
     <AndroidLinkMode>SdkOnly</AndroidLinkMode>
-    <AndroidStoreUncompressedFileExtensions />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -30,7 +29,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AndroidLinkSkip />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
@@ -41,6 +39,7 @@
     <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
     <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
     <DeployExternal>true</DeployExternal>
+    <AndroidStoreUncompressedFileExtensions />
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Android" />
@@ -75,7 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Autobot.Brick\Autobot.Brick.csproj">
-      <Project>{24BBF6C1-E45B-4D10-9F53-53ADA948CCA2}</Project>
+      <Project>{24bbf6c1-e45b-4d10-9f53-53ada948cca2}</Project>
       <Name>Autobot.Brick</Name>
     </ProjectReference>
     <ProjectReference Include="..\Autobot.Common\Autobot.Common.csproj">

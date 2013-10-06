@@ -141,19 +141,20 @@ namespace Autotob.Brick
 		/// </param>
 		void TurnRightForward(sbyte speed, sbyte turnPercent);
 
-		/// <summary>
-		/// Turns the vehicle right
-		/// </summary>
-		/// <param name='speed'>
-		/// Speed of the vehicle -100 to 100
-		/// </param>
-		/// <param name='turnPercent'>
-		/// Turn percent 
-		/// </param>
-		/// <param name='reply'>
-		/// If set to <c>true</c> the brick will send a reply
-		/// </param>
-		void TurnRightForward(sbyte speed, sbyte turnPercent, bool reply);
+        /// <summary>
+        /// Turns the vehicle right
+        /// </summary>
+        /// <param name='speed'>
+        ///     Speed of the vehicle -100 to 100
+        /// </param>
+        /// <param name='turnPercent'>
+        ///     Turn percent 
+        /// </param>
+        /// <param name='reply'>
+        ///     If set to <c>true</c> the brick will send a reply
+        /// </param>
+        /// <param name="break"></param>
+        void TurnRightForward(sbyte speed, sbyte turnPercent, bool reply, bool @break = false);
 
 		/// <summary>
 		/// Turns the vehicle right will moving backwards

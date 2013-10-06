@@ -16,5 +16,8 @@ namespace Autobot.Common
 		Hello = 10,
         Ack = 11,
         Sense = 12,
+        RemoteControl = 13,
+        Speed = 14,
+        Turn = 15,
     }
 }

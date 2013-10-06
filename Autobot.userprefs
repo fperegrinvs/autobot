@@ -1,21 +1,11 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Autobot.Client\MainActivity.cs">
-    <Files>
-      <File FileName="Autobot.Server\MainActivity.cs" Line="57" Column="28" />
-      <File FileName="Autobot.Client\Resources\Values\Strings.xml" Line="4" Column="49" />
-      <File FileName="Autobot.Client\MainActivity.cs" Line="97" Column="24" />
-      <File FileName="Autobot.Server\MainActivity.TcpServer.cs" Line="3" Column="13" />
-    </Files>
-  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workbench />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore>
-      <Breakpoint file="F:\Lego\Autobot\Autobot.Client\MainActivity.cs" line="103" column="22" />
-    </BreakpointStore>
+    <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches>
     <Watch file="Autobot.Client\Activity1.cs" line="82" offsetX="295" offsetY="1782" expression="hosts" liveUpdate="False" />
   </MonoDevelop.Ide.DebuggingService.PinnedWatches>
-  <MonoDevelop.Ide.ItemProperties.Autobot.Server MonoForAntroid.PreferredDevice="3.7in WVGA (Nexus One)" AndroidDeviceId-Debug="4df11f0c57699f9b" />
   <MonoDevelop.Ide.ItemProperties.Autobot.Client MonoForAntroid.PreferredDevice="3.7in WVGA (Nexus One)" AndroidDeviceId-Debug="4df11f0c57699f9b" />
 </Properties>

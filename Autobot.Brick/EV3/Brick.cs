@@ -31,7 +31,7 @@ namespace Autotob.Brick.EV3
 		private Motor motorD = new Motor();
 		private Memory memory = new Memory();
 		private MotorSync motorSync = new MotorSync();
-		private Vehicle vehicle = new Vehicle(MotorPort.OutA,MotorPort.OutC);
+		private Vehicle vehicle = new Vehicle(MotorPort.OutB,MotorPort.OutC);
 		private Mailbox mailbox = new Mailbox();
 		private void Init(){
 			this.Sensor1 = new TSensor1();

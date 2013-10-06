@@ -58,6 +58,8 @@
 
                 // connect to lego
                 this.Bot.Connection.Open();
+
+				this.Bot.MotorA.ResetTacho();
             }
             catch (Exception e)
             {
