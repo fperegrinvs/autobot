@@ -128,10 +128,6 @@ namespace Autobot.Server
                         msgToSend.Command = MessageType.Ack;
                         break;
                     }
-                    case MessageType.Center:
-                        Bot.Center();
-                        msgToSend.Command = MessageType.Ack;
-                        break;
                     case MessageType.Left:
                     {
                         var distance = msgReceived.Parameter1 > 0 ? msgReceived.Parameter1 / 100 : 1;

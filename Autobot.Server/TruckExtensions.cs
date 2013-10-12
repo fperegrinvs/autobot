@@ -4,67 +4,84 @@ namespace Autobot.Server
     using System.Collections.Generic;
     using System.Threading;
 
-    using Android.Locations;
-
     using Autobot.Common;
 
     using Autotob.Brick.EV3;
 
     public static class TruckExtensions
     {
-        public static void Center(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3)
+        static void WaitForMotorToStop(this Motor motor, int? tacho = null)
         {
-            var pos = ev3.MotorA.GetTachoCount();
-            if (pos == 0)
+            try
             {
-                return;
-            }
+                var waited = false;
 
-            if (pos < 0)
-            {
-                ev3.MotorA.On(10, 100, true);
-            }
-            else if (pos > 0)
-            {
-                ev3.MotorA.On(-10, 100, true);
-            }
+                // pausa inicial para o comando começar a ser processado
+                if (!tacho.HasValue)
+                {
+                    Thread.Sleep(50);
+                }
 
-            ev3.MotorA.ResetTacho();
+                while (true)
+                {
+                    // verifica se motor está ativo
+                    if (motor.IsRunning())
+                    {
+                        Thread.Sleep(20);
+                    }
+                    else if (tacho.HasValue)
+                    {
+                        var count = motor.GetTachoCount();
+                        var diff = Math.Abs(count - tacho.Value);
+
+                        if (diff >= 2)
+                        {
+                            if (!waited)
+                            {
+                                Thread.Sleep(50);
+                                waited = true;
+                            }
+                            else
+                            {
+                                // comando se perdeu, criar um novo
+                                if (count < tacho.Value)
+                                {
+                                    motor.On(10, Convert.ToUInt32(tacho.Value - count), true);
+                                }
+                                else
+                                {
+                                    motor.On(-10, Convert.ToUInt32(count - tacho.Value), true);
+                                }
+
+                                Thread.Sleep(20);
+                                waited = false;
+                            }
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
         }
 
-        static void WaitForMotorToStop(this Motor motor)
+        public static void Speed<TData>(
+            this Brick<IRSensor, Sensor, Sensor, Sensor, TData> ev3, int speed) where TData : new()
         {
-            while (motor.IsRunning()) { Thread.Sleep(50); }
-        }
-
-        public static void Speed(
-            this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3, int speed)
-        {
-            //if (speed > 0)
-            //{
             ev3.Vehicle.Forward(Convert.ToSByte(speed));
-            //}
-            //else
-            //{
-            //    ev3.Vehicle.Backward(Convert.ToSByte(speed * -1));
-            //}
         }
 
-        public static void Turn(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3, int turn, int speed)
+        public static void Turn<TData>(this Brick<IRSensor, Sensor, Sensor, Sensor, TData> ev3, int turn, int speed) where TData : new()
         {
             ev3.Vehicle.TurnRightForward(Convert.ToSByte(speed), Convert.ToSByte(turn));
-
-            //if (speed > 0)
-            //{
-            //    if (turn < 0)
-            //    {
-            //    }
-            //}
-            //byte power = 30;
-            //var current = ev3.MotorA.GetTachoCount();
-            //var desired = Convert.ToInt32((turn * 0.8));
-
-            //ev3.MotorA.MoveTo(power, desired, true);
         }
 
         /// <summary>
@@ -75,39 +92,49 @@ namespace Autobot.Server
         /// <param name="power"></param>
         public static void Forward(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3, double distance = 1, sbyte power = 80)
         {
+            // angulo original
+            var originalDirection = ev3.Data.Direction;
+
+            // reseta o tacometro
+            ev3.MotorB.ResetTacho();
+
+            // movimenta o veículo para frente
             ev3.Vehicle.Forward(power, Convert.ToUInt16(Math.Round(360 * distance, 0)), false, true);
 
-            var originalAngle = ev3.Data.Direction / 180 * Math.PI;
+            // aguarda motor parar
+            WaitForMotorToStop(ev3.MotorB);
 
-            // atualizando posição
-            var finalAngle = ev3.Data.Direction / 180 * Math.PI;
+            // angulo final do veículo
+            var finalDirection = ev3.Data.Direction;
 
-            if (distance < 0)
+            // verifica se o veículo andou torto, se for este o caso, é necessário entender o motivo
+            if (Math.Abs(originalDirection - finalDirection) > 5)
             {
-                finalAngle = (finalAngle + Math.PI) % (Math.PI * 2);
-                distance = Math.Abs(distance);
+                throw new Exception("Movimento não mapeado");
             }
 
-            var beta = finalAngle - originalAngle;
-            var r = distance * ev3.Data.TyreLegth;
-            var angle = Math.Atan(beta * ev3.Data.Length / r);
 
-            ev3.Data.WheelAngle = angle / Math.PI * 180;
+            ev3.Data.Direction = finalDirection;
 
-            // aproximadamente linha reta
-            if (Math.Abs(beta) < 0.01)
+            var angle = finalDirection / 180.0 * Math.PI;
+
+            // giro efetivo do motor
+            var tacho = ev3.MotorB.GetTachoCount();
+
+            var total = tacho * ev3.Data.TyreLegth;
+
+            // se o veículo está de ré, considera o angulo inverso
+            if (total < 0)
             {
-                ev3.Data.PosX += r * Math.Cos(originalAngle);
-                ev3.Data.PosY += r * Math.Sin(originalAngle);
+                total = Math.Abs(total);
+                angle += Math.PI;
             }
-            else
-            {
-                // bicycle model
-                var cx = ev3.Data.PosX - Math.Sin(originalAngle) * r;
-                var cy = ev3.Data.PosY + Math.Cos(originalAngle) * r;
-                ev3.Data.PosX = cx + Math.Sin(finalAngle);
-                ev3.Data.PosY = cy - Math.Cos(finalAngle);
-            }
+
+            var deltaX = total * Math.Cos(angle);
+            var deltaY = total * Math.Sin(angle);
+
+            ev3.Data.PosX += deltaX;
+            ev3.Data.PosY += deltaY;
         }
 
         public static void Back(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3, double distance = 1, sbyte power = 80)
@@ -118,32 +145,61 @@ namespace Autobot.Server
 
         public static void Left(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3, double distance = 1, sbyte power = 80)
         {
+            var originalDirection = ev3.Data.Direction;
             ev3.Vehicle.TurnLeftForward(80, 100, Convert.ToUInt16(Math.Round(360 * distance, 0)), false, true);
+            WaitForMotorToStop(ev3.MotorB);
+            var finalDirection = ev3.Data.Direction;
+
+            var originalDirectionRadians = originalDirection / 180.0 * Math.PI;
+            var finalDiretionRadians = finalDirection / 180.0 * Math.PI;
+            var half_w = ev3.Data.Length / 2.0;
+
+            var dX = half_w * (Math.Sin(finalDiretionRadians) - Math.Sin(originalDirectionRadians));
+            var dy = half_w * (Math.Cos(originalDirectionRadians) - Math.Cos(finalDiretionRadians));
+
+            ev3.Data.Direction = finalDirection;
+            ev3.Data.PosX += dX;
+            ev3.Data.PosY += dy;
         }
 
         public static void Right(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3, double distance = 1, sbyte power = 80)
         {
+            var originalDirection = ev3.Data.Direction;
             ev3.Vehicle.TurnRightForward(80, 100, Convert.ToUInt16(Math.Round(360 * distance, 0)), false, true);
+            WaitForMotorToStop(ev3.MotorB);
+            var finalDirection = ev3.Data.Direction;
+
+            var originalDirectionRadians = originalDirection / 180.0 * Math.PI;
+            var finalDiretionRadians = finalDirection / 180.0 * Math.PI;
+            var half_w = ev3.Data.Length / 2.0;
+
+            var dX = half_w * (Math.Sin(originalDirectionRadians) - Math.Sin(finalDiretionRadians));
+            var dy = half_w * (Math.Cos(finalDiretionRadians) - Math.Cos(originalDirectionRadians));
+
+            ev3.Data.Direction = finalDirection;
+            ev3.Data.PosX += dX;
+            ev3.Data.PosY += dy;
         }
 
-        public static List<int> Sense(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3)
+        public static List<int> Sense<TData>(this Brick<IRSensor, Sensor, Sensor, Sensor, TData> ev3) where TData : new()
         {
             const uint Angle = 15u;
             const int Size = 360 / (int)Angle;
             var map = new List<int>(Size);
 
+            ev3.MotorA.ResetTacho();
             ev3.MotorA.On(-10, 180, true);
-            ev3.MotorA.WaitForMotorToStop();
+            ev3.MotorA.WaitForMotorToStop(-180);
 
             for (var i = 0; i < Size; i++)
             {
                 map.Add(ev3.Sensor1.Read());
                 ev3.MotorA.On(10, Angle, true);
-                ev3.MotorA.WaitForMotorToStop();
+                ev3.MotorA.WaitForMotorToStop(Convert.ToInt32(-180 + ((i + 1) * Angle)));
             }
 
             ev3.MotorA.On(-10, 180, true);
-            ev3.MotorA.WaitForMotorToStop();
+            ev3.MotorA.WaitForMotorToStop(0);
 
             return map;
         }

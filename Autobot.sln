@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoBot.FormsClient", "Auto
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Autobot.Brick", "Autobot.Brick\Autobot.Brick.csproj", "{24BBF6C1-E45B-4D10-9F53-53ADA948CCA2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Autobot.Brick.Tests", "Autobot.Brick.Tests\Autobot.Brick.Tests.csproj", "{439BCC13-9073-4E65-A98D-51B2BE778406}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,10 @@ Global
 		{24BBF6C1-E45B-4D10-9F53-53ADA948CCA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24BBF6C1-E45B-4D10-9F53-53ADA948CCA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24BBF6C1-E45B-4D10-9F53-53ADA948CCA2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{439BCC13-9073-4E65-A98D-51B2BE778406}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{439BCC13-9073-4E65-A98D-51B2BE778406}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{439BCC13-9073-4E65-A98D-51B2BE778406}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{439BCC13-9073-4E65-A98D-51B2BE778406}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

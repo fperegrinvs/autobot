@@ -25,7 +25,7 @@ namespace Autobot.Common
         /// <summary>
         /// Distancia entre-eixos do carro
         /// </summary>
-        public double Length = 16;
+        public double Length = 17;
 
         /// <summary>
         /// Angulo da roda em relação ao eixo principal do carro
@@ -35,7 +35,7 @@ namespace Autobot.Common
         /// <summary>
         /// compirmento do pneu (1 rotação)
         /// </summary>
-        public double TyreLegth = Math.PI * 3.1;
+        public double TyreLegth = Math.PI * 4;
 
         /// <summary>
         /// Serializes the data
