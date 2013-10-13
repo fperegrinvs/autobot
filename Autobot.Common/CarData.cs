@@ -8,6 +8,16 @@ namespace Autobot.Common
     public class CarData
     {
         /// <summary>
+        /// Lock to avoid command override
+        /// </summary>
+        public object MoveLock = new object();
+
+        /// <summary>
+        /// Tells if the vehicle is moving
+        /// </summary>
+        public bool IsMoving { get; set; }
+
+        /// <summary>
         /// Current direction
         /// </summary>
         public float Direction { get; set; }

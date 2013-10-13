@@ -92,31 +92,43 @@ namespace Autobot.Server
         /// <param name="power"></param>
         public static void Forward(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3, double distance = 1, sbyte power = 80)
         {
-            // angulo original
-            var originalDirection = ev3.Data.Direction;
-
-            // reseta o tacometro
-            ev3.MotorB.ResetTacho();
-
-            // movimenta o veículo para frente
-            ev3.Vehicle.Forward(power, Convert.ToUInt16(Math.Round(360 * distance, 0)), false, true);
-
-            // aguarda motor parar
-            WaitForMotorToStop(ev3.MotorB);
-
-            // angulo final do veículo
-            var finalDirection = ev3.Data.Direction;
-
-            // verifica se o veículo andou torto, se for este o caso, é necessário entender o motivo
-            if (Math.Abs(originalDirection - finalDirection) > 5)
+            lock (ev3.Data.MoveLock)
             {
-                throw new Exception("Movimento não mapeado");
+                // angulo original
+                var originalDirection = ev3.Data.Direction;
+
+                // reseta o tacometro
+                ev3.MotorB.ResetTacho();
+
+                // movimenta o veículo para frente
+                ev3.Vehicle.Forward(power, Convert.ToUInt16(Math.Round(360 * distance, 0)), false, true);
+
+                // aguarda motor parar
+                WaitForMotorToStop(ev3.MotorB);
+
+                // angulo final do veículo
+                var finalDirection = ev3.Data.Direction;
+
+                // verifica se o veículo andou torto, se for este o caso, é necessário entender o motivo
+                if (Math.Abs(originalDirection - finalDirection) > 5)
+                {
+                    throw new Exception("Movimento não mapeado");
+                }
+
+                var delta = ev3.GetMovement();
+
+                ev3.Data.PosX += delta.Item1;
+                ev3.Data.PosY += delta.Item2;
+
+                // reseta o tacometro
+                ev3.MotorB.ResetTacho();
             }
+        }
 
 
-            ev3.Data.Direction = finalDirection;
-
-            var angle = finalDirection / 180.0 * Math.PI;
+        public static Tuple<double, double> GetMovement(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3)
+        {
+            var angle = ev3.Data.Direction / 180.0 * Math.PI;
 
             // giro efetivo do motor
             var tacho = ev3.MotorB.GetTachoCount();
@@ -133,8 +145,7 @@ namespace Autobot.Server
             var deltaX = total * Math.Cos(angle);
             var deltaY = total * Math.Sin(angle);
 
-            ev3.Data.PosX += deltaX;
-            ev3.Data.PosY += deltaY;
+            return new Tuple<double, double>(deltaX, deltaY);
         }
 
         public static void Back(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3, double distance = 1, sbyte power = 80)
@@ -181,24 +192,35 @@ namespace Autobot.Server
             ev3.Data.PosY += dy;
         }
 
-        public static List<int> Sense<TData>(this Brick<IRSensor, Sensor, Sensor, Sensor, TData> ev3) where TData : new()
+        public static List<SenseData> Sense(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3, int angle = 360)
         {
             const uint Angle = 15u;
-            const int Size = 360 / (int)Angle;
-            var map = new List<int>(Size);
+            int size = angle / (int)Angle;
+            var map = new List<SenseData>(size);
+
+            var half_angle = Convert.ToUInt16(angle / 2);
+            var negative_half = half_angle * -1;
 
             ev3.MotorA.ResetTacho();
-            ev3.MotorA.On(-10, 180, true);
-            ev3.MotorA.WaitForMotorToStop(-180);
+            ev3.MotorA.On(-10,  half_angle, true);
+            ev3.MotorA.WaitForMotorToStop(negative_half);
 
-            for (var i = 0; i < Size; i++)
+            for (var i = 0; i < size; i++)
             {
-                map.Add(ev3.Sensor1.Read());
+                var sense = new SenseData();
+                sense.Distance = ev3.Sensor1.Read();
+                sense.Angle = ev3.Data.Direction + ev3.MotorA.GetTachoCount();
+
+                var movement = ev3.GetMovement();
+                sense.PositionX = ev3.Data.PosX + movement.Item1;
+                sense.PositionY = ev3.Data.PosY + movement.Item2;
+
+                map.Add(sense);
                 ev3.MotorA.On(10, Angle, true);
-                ev3.MotorA.WaitForMotorToStop(Convert.ToInt32(-180 + ((i + 1) * Angle)));
+                ev3.MotorA.WaitForMotorToStop(Convert.ToInt32(negative_half + ((i + 1) * Angle)));
             }
 
-            ev3.MotorA.On(-10, 180, true);
+            ev3.MotorA.On(-10, half_angle, true);
             ev3.MotorA.WaitForMotorToStop(0);
 
             return map;

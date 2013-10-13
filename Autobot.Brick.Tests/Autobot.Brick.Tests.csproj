@@ -110,8 +110,13 @@
     <Compile Include="..\Autobot.Server\TruckExtensions.cs">
       <Link>TruckExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\Autobot.Common\CarData.cs">
+      <Link>CarData.cs</Link>
+    </Compile>
+    <Compile Include="..\Autobot.Common\SenseData.cs">
+      <Link>SenseData.cs</Link>
+    </Compile>
     <Compile Include="BrickTests.cs" />
-    <Compile Include="CarData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="usb.cs" />
   </ItemGroup>

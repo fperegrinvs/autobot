@@ -60,6 +60,9 @@
     <Compile Include="..\Autobot.Common\MessageType.cs">
       <Link>MessageType.cs</Link>
     </Compile>
+    <Compile Include="..\Autobot.Common\SenseData.cs">
+      <Link>SenseData.cs</Link>
+    </Compile>
     <Compile Include="..\Autobot.Common\StringEventArgs.cs">
       <Link>StringEventArgs.cs</Link>
     </Compile>
@@ -97,7 +100,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties ProjectLinkReference="8511d714-6532-4c11-8489-2c024a46e79a" ProjectLinkerExcludeFilter="\\?desktop(\\.*)?$;\\?silverlight(\\.*)?$;\.desktop;\.silverlight;\.xaml;^service references(\\.*)?$;\.clientconfig;^web references(\\.*)?$" />
+      <UserProperties ProjectLinkerExcludeFilter="\\?desktop(\\.*)?$;\\?silverlight(\\.*)?$;\.desktop;\.silverlight;\.xaml;^service references(\\.*)?$;\.clientconfig;^web references(\\.*)?$" ProjectLinkReference="8511d714-6532-4c11-8489-2c024a46e79a" />
     </VisualStudio>
   </ProjectExtensions>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

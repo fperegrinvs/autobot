@@ -35,7 +35,7 @@ namespace Autobot.Brick.Tests
         [TestMethod]
         public void SenseTest()
         {
-            var bot = new Brick<IRSensor, Sensor, Sensor, Sensor, TestData>("usb");
+            var bot = new Brick<IRSensor, Sensor, Sensor, Sensor, CarData>("usb");
             // connect to lego
             bot.Connection.Open();
 

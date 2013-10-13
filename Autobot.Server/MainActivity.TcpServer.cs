@@ -145,12 +145,18 @@ namespace Autobot.Server
                         break;
                     }
                     case MessageType.Sense:
-                        var result = Bot.Sense();
-                        msgToSend.Data = new byte[result.Count * 4];
+                        if (msgReceived.Parameter1 == 0)
+                        {
+                            msgReceived.Parameter1 = 360;
+                        }
+
+                        var result = Bot.Sense(msgReceived.Parameter1);
+                        msgToSend.Data = new byte[result.Count * 24];
                         for (var i = 0; i < result.Count; i++)
                         {
-                            var senseData = BitConverter.GetBytes(result[i]);
-                            Buffer.BlockCopy(senseData, 0, msgToSend.Data, 4 * i, 4);
+                            var data = result[i].ToBytes();
+
+                            Buffer.BlockCopy(data, 0, msgToSend.Data, 24 * i, 24);
                         }
                         break;
                     case MessageType.Info:
