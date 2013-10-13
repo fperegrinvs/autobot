@@ -1,6 +1,7 @@
 ﻿namespace Autobot.Server
 {
     using System;
+    using System.Globalization;
     using System.Linq;
 
     using Autobot.Common;
@@ -36,7 +37,12 @@
 
             var offButton = this.FindViewById<Button>(Resource.Id.OffButton);
             offButton.Click += delegate { this.Off(); };
+
+            compassText = this.FindViewById<TextView>(Resource.Id.CompassTxt);
         }
+
+
+        private TextView compassText;
 
         /// <summary>
         /// Bot instance
@@ -135,7 +141,17 @@
                 {
                     var orientation = new float[3];
                     SensorManager.GetOrientation(r, orientation);
-                    Bot.Data.Direction = orientation[0]; // orientation contains: azimut, pitch and roll
+                    var degrees = Java.Lang.Math.ToDegrees(orientation[0]);
+
+                    // degrees = [-180, 180] => [0, 360]
+                    // 0 is north
+                    if (degrees < 0)
+                    {
+                        degrees = 360 + degrees;
+                    }
+
+					Bot.Data.Direction = (float)degrees; // orientation contains: azimut, pitch and roll
+					// compassText.Text = degrees.ToString(CultureInfo.InvariantCulture);
                 }
             }
         }
