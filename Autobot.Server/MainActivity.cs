@@ -1,7 +1,7 @@
 ﻿namespace Autobot.Server
 {
     using System;
-    using System.Collections.Generic;
+    using System.Linq;
 
     using Autobot.Common;
 
@@ -13,6 +13,7 @@
     using global::Android.Widget;
 
     using Sensor = Autotob.Brick.EV3.Sensor;
+    using SensorType = Android.Hardware.SensorType;
 
     [Activity(Label = "Brick.Android", MainLauncher = true, Icon = "@drawable/icon")]
     public partial class MainActivity : Activity, ISensorEventListener
@@ -59,7 +60,7 @@
                 // connect to lego
                 this.Bot.Connection.Open();
 
-				this.Bot.MotorA.ResetTacho();
+                this.Bot.MotorA.ResetTacho();
             }
             catch (Exception e)
             {
@@ -81,18 +82,11 @@
             // Register sensor
             var sm = (SensorManager)this.GetSystemService(SensorService);
 
-            IList<Android.Hardware.Sensor> mySensors = sm.GetSensorList(Android.Hardware.SensorType.Orientation);
+            var accelerometer = sm.GetDefaultSensor(SensorType.Accelerometer);
+            var magnetometer = sm.GetDefaultSensor(SensorType.MagneticField);
 
-            if (mySensors.Count > 0)
-            {
-                sm.RegisterListener(this, mySensors[0], SensorDelay.Normal);
-                Toast.MakeText(this, "Start ORIENTATION Sensor", ToastLength.Long).Show();
-            }
-            else
-            {
-                Toast.MakeText(this, "No ORIENTATION Sensor", ToastLength.Long).Show();
-                this.Finish();
-            }
+            sm.RegisterListener(this, accelerometer, SensorDelay.Ui);
+            sm.RegisterListener(this, magnetometer, SensorDelay.Ui);
         }
 
         /// <summary>
@@ -101,38 +95,6 @@
         public void Off()
         {
             this.Bot.Connection.Close();
-        }
-
-        public void Test2()
-        {
-            var ev3 = new Brick<IRSensor, Sensor, Sensor, Sensor, CarData>("Bot");
-            try
-            {
-                ev3.Connection.Open();
-                //ev3.Sensor1.Mode = IRMode.Proximity;
-                // var tc = ev3.MotorA.GetTachoCount();
-                //ev3.Right();
-                //Thread.Sleep(300);
-                //ev3.Left();
-                ev3.MotorC.On(80, 360, true);
-                // var x = ev3.MotorB.GetTachoCount();
-                // ev3.MotorB.ResetTacho();
-                // var map = ev3.Sense();
-            }
-            catch (Exception e)
-            {
-                string msg = e.Message;
-                if (e.InnerException != null)
-                {
-                    msg += e.InnerException.Message;
-                }
-
-                Toast.MakeText(this, msg, ToastLength.Long).Show();
-            }
-            finally
-            {
-                ev3.Connection.Close();
-            }
         }
 
         /// <summary>
@@ -144,15 +106,37 @@
         {
         }
 
+        private float[] mGravity;
+
+        private float[] mGeomagnetic;
+
         /// <summary>
         /// Sensor reading changed
         /// </summary>
         /// <param name="e">new reading</param>
         public void OnSensorChanged(SensorEvent e)
         {
-            if (e.Sensor.Type == Android.Hardware.SensorType.Orientation)
+            if (e.Sensor.Type == SensorType.Accelerometer)
             {
-                Bot.Data.Direction = e.Values[0];
+                mGravity = e.Values.ToArray();
+            }
+
+            if (e.Sensor.Type == SensorType.MagneticField)
+            {
+                mGeomagnetic = e.Values.ToArray();
+            }
+
+            if (mGravity != null && mGeomagnetic != null)
+            {
+                var r = new float[9];
+                var I = new float[9];
+                bool success = SensorManager.GetRotationMatrix(r, I, mGravity, mGeomagnetic);
+                if (success)
+                {
+                    var orientation = new float[3];
+                    SensorManager.GetOrientation(r, orientation);
+                    Bot.Data.Direction = orientation[0]; // orientation contains: azimut, pitch and roll
+                }
             }
         }
     }
