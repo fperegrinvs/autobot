@@ -15,6 +15,9 @@ using System.Globalization;
 
 namespace Autobot.WpfClient
 {
+    using System.Collections.Generic;
+
+    using Autobot.Common;
     using Autobot.WpfClient.Gestures;
 
     /// <summary>
@@ -38,10 +41,6 @@ namespace Autobot.WpfClient
         private const double TileMargin = 10;
 
         private const int TotalVisuals = 0;
-
-        private const int Rows = 100;
-
-        private const int Cols = 100;
 
         public MainWindow()
         {
@@ -74,64 +73,27 @@ namespace Autobot.WpfClient
         {
             zoom.Zoom = 1;
             zoom.Offset = new Point(0, 0);
-
-            // Fill a sparse grid of rectangular color palette nodes with each tile being 50x30.    
-            // with hue across x-axis and saturation on y-axis, brightness is fixed at 100;
-            Random r = new Random(Environment.TickCount);
-            grid.VirtualChildren.Clear();
-            double w = TileWidth + TileMargin;
-            double h = TileHeight + TileMargin;
-            int count = (Rows * Cols) / 20;
-            double width = (w * (Cols - 1));
-            double height = (h * (Rows - 1));
-            while (count > 0)
+            var shape = new GridShape(new Rect(0, 0, 50, 50));
+            shape.IsFree = true;
+            shape.IsVisited = true;
+            shape.Sensor = new List<SenseData>();
+            var distances = new byte[]{ 0, 255, 255, 128, 255, 128, 0, 0};
+            var singleAngle = 360 / distances.Length;
+            for (var i = 0; i < distances.Length; i++)
             {
-                double x = r.NextDouble() * width;
-                double y = r.NextDouble() * height;
-
-                Point pos = new Point(TileMargin + x, TileMargin + y);
-                Size s = new Size(r.Next((int)TileWidth, (int)TileWidth * 5),
-                                    r.Next((int)TileHeight, (int)TileHeight * 5));
-                TestShapeType type = (TestShapeType)r.Next(0, (int)TestShapeType.Last);
-
-                //Color color = HlsColor.ColorFromHLS((x * 240) / cols, 100, 240 - ((y * 240) / rows));                    
-                TestShape shape = new TestShape(new Rect(pos, s), type, r);
-                SetRandomBrushes(shape, r);
-                grid.AddVirtualChild(shape);
-                count--;
+                shape.Sensor.Add(new SenseData()
+                                 {
+                                      Angle = singleAngle * i,
+                                      Distance = distances[i]
+                                 });
             }
-        }
+            grid.AddVirtualChild(shape);
 
-        readonly string[] colorNames = new string[10];
-
-        readonly Brush[] strokeBrushes = new Brush[10];
-
-        readonly Brush[] fillBrushes = new Brush[10];
-
-        void SetRandomBrushes(TestShape s, Random r)
-        {
-            int i = r.Next(0, 10);
-            if (this.strokeBrushes[i] == null)
-            {
-                Color color = Color.FromRgb((byte)r.Next(0, 255), (byte)r.Next(0, 255), (byte)r.Next(0, 255));
-                HlsColor hls = new HlsColor(color);
-                Color c1 = hls.Darker(0.25f);
-                Color c2 = hls.Lighter(0.25f);
-                Brush fill = new LinearGradientBrush(Color.FromArgb(0x80, c1.R, c1.G, c1.B),
-                    Color.FromArgb(0x80, color.R, color.G, color.B), 45);
-                Brush stroke = new LinearGradientBrush(Color.FromArgb(0x80, color.R, color.G, color.B),
-                    Color.FromArgb(0x80, c2.R, c2.G, c2.B), 45);
-
-                this.colorNames[i] = "#" + color.R.ToString("X2", CultureInfo.InvariantCulture) +
-                    color.G.ToString("X2", CultureInfo.InvariantCulture) +
-                    color.B.ToString("X2", CultureInfo.InvariantCulture);
-                this.strokeBrushes[i] = stroke;
-                this.fillBrushes[i] = fill;
-            }
-
-            s.Label = this.colorNames[i];
-            s.Stroke = this.strokeBrushes[i];
-            s.Fill = this.fillBrushes[i];
+            shape = new GridShape(new Rect(50, 50, 50, 50));
+            shape.IsFree = true;
+            shape.IsVisited = true;
+            shape.Sensor = null;
+            grid.AddVirtualChild(shape);
         }
 
         void OnScaleChanged(object sender, EventArgs e)
@@ -287,205 +249,5 @@ namespace Autobot.WpfClient
                 zoom.Zoom = e.NewValue;
             }
         }
-
-        enum TestShapeType { Ellipse, Curve, Rectangle, Last };
-
-        class TestShape : IVirtualChild
-        {
-            Rect bounds;
-            public Brush Fill { get; set; }
-            public Brush Stroke { get; set; }
-            public string Label { get; set; }
-            UIElement visual;
-            TestShapeType _shape;
-            Point[] _points;
-
-            public event EventHandler BoundsChanged;
-
-            public TestShape(Rect bounds, TestShapeType s, Random r)
-            {
-                this.bounds = bounds;
-                _shape = s;
-                if (s == TestShapeType.Curve)
-                {
-                    this.bounds.Width *= 2;
-                    this.bounds.Height *= 2;
-                    _points = new Point[3];
-
-                    bounds = new Rect(0, 0, this.bounds.Width, this.bounds.Height);
-                    switch (r.Next(0, 8))
-                    {
-                        case 0:
-                            _points[0] = bounds.TopLeft;
-                            _points[1] = bounds.TopRight;
-                            _points[2] = bounds.BottomRight;
-                            break;
-                        case 1:
-                            _points[0] = bounds.TopRight;
-                            _points[1] = bounds.BottomRight;
-                            _points[2] = bounds.BottomLeft;
-                            break;
-                        case 2:
-                            _points[0] = bounds.BottomRight;
-                            _points[1] = bounds.BottomLeft;
-                            _points[2] = bounds.TopLeft;
-                            break;
-                        case 3:
-                            _points[0] = bounds.BottomLeft;
-                            _points[1] = bounds.TopLeft;
-                            _points[2] = bounds.TopRight;
-                            break;
-                        case 4:
-                            _points[0] = bounds.TopLeft;
-                            _points[1] = new Point(bounds.Right, bounds.Height / 2);
-                            _points[2] = bounds.BottomLeft;
-                            break;
-                        case 5:
-                            _points[0] = bounds.TopRight;
-                            _points[1] = new Point(bounds.Left, bounds.Height / 2);
-                            _points[2] = bounds.BottomRight;
-                            break;
-                        case 6:
-                            _points[0] = bounds.TopLeft;
-                            _points[1] = new Point(bounds.Width / 2, bounds.Bottom);
-                            _points[2] = bounds.TopRight;
-                            break;
-                        case 7:
-                            _points[0] = bounds.BottomLeft;
-                            _points[1] = new Point(bounds.Width / 2, bounds.Top);
-                            _points[2] = bounds.BottomRight;
-                            break;
-                    }
-                }
-            }
-
-
-            public UIElement Visual
-            {
-                get { return this.visual; }
-            }
-
-            public UIElement CreateVisual(VirtualCanvas parentArg)
-            {
-                if (this.visual == null)
-                {
-                    switch (_shape)
-                    {
-                        case TestShapeType.Curve:
-                            {
-                                PathGeometry g = new PathGeometry();
-                                PathFigure f = new PathFigure();
-                                f.StartPoint = _points[0];
-                                g.Figures.Add(f);
-                                for (int i = 0, n = _points.Length; i < n; i += 3)
-                                {
-                                    BezierSegment s = new BezierSegment(_points[i], _points[i + 1], _points[i + 2], true);
-                                    f.Segments.Add(s);
-                                }
-                                Path p = new Path();
-                                p.Data = g;
-
-                                p.Stroke = Stroke;
-                                p.StrokeThickness = 2;
-
-                                //DropShadowBitmapEffect effect = new DropShadowBitmapEffect();
-                                //effect.Opacity = 0.8;
-                                //effect.ShadowDepth = 3;
-                                //effect.Direction = 270;
-                                //c.BitmapEffect = effect;
-                                this.visual = p;
-                                break;
-                            }
-                        case TestShapeType.Ellipse:
-                            {
-                                Canvas c = new Canvas();
-
-                                Ellipse e = new Ellipse();
-                                c.Width = e.Width = this.bounds.Width;
-                                c.Height = e.Height = this.bounds.Height;
-                                c.Children.Add(e);
-
-                                Size s = MeasureText(parentArg, Label);
-                                double x = (this.bounds.Width - s.Width) / 2;
-                                double y = (this.bounds.Height - s.Height) / 2;
-
-                                TextBlock text = new TextBlock();
-                                text.Text = Label;
-                                Canvas.SetLeft(text, x);
-                                Canvas.SetTop(text, y);
-                                c.Children.Add(text);
-
-                                e.StrokeThickness = 2;
-                                e.Stroke = Stroke;
-                                e.Fill = Fill;
-
-                                //DropShadowBitmapEffect effect = new DropShadowBitmapEffect();
-                                //effect.Opacity = 0.8;
-                                //effect.ShadowDepth = 3;
-                                //effect.Direction = 270;
-                                //c.BitmapEffect = effect;
-                                this.visual = c;
-                                break;
-                            }
-                        case TestShapeType.Rectangle:
-                            {
-                                Border b = new Border();
-                                b.CornerRadius = new CornerRadius(3);
-                                b.Width = this.bounds.Width;
-                                b.Height = this.bounds.Height;
-                                TextBlock text = new TextBlock();
-                                text.Text = Label;
-                                text.VerticalAlignment = VerticalAlignment.Center;
-                                text.HorizontalAlignment = HorizontalAlignment.Center;
-                                b.Child = text;
-                                b.Background = Fill;
-                                //DropShadowBitmapEffect effect = new DropShadowBitmapEffect();
-                                //effect.Opacity = 0.8;
-                                //effect.ShadowDepth = 3;
-                                //effect.Direction = 270;
-                                //b.BitmapEffect = effect;
-                                this.visual = b;
-                                break;
-                            }
-                    }
-                }
-                return this.visual;
-            }
-
-            public void DisposeVisual()
-            {
-                this.visual = null;
-            }
-
-            public Rect Bounds
-            {
-                get { return this.bounds; }
-            }
-
-            VirtualCanvas parent;
-            Typeface typeface;
-            double fontSize;
-
-            private Size MeasureText(VirtualCanvas parent, string label)
-            {
-                if (this.parent != parent)
-                {
-                    FontFamily fontFamily = (FontFamily)parent.GetValue(TextBlock.FontFamilyProperty);
-                    FontStyle fontStyle = (FontStyle)parent.GetValue(TextBlock.FontStyleProperty);
-                    FontWeight fontWeight = (FontWeight)parent.GetValue(TextBlock.FontWeightProperty);
-                    FontStretch fontStretch = (FontStretch)parent.GetValue(TextBlock.FontStretchProperty);
-                    this.fontSize = (double)parent.GetValue(TextBlock.FontSizeProperty);
-                    this.typeface = new Typeface(fontFamily, fontStyle, fontWeight, fontStretch);
-                    this.parent = parent;
-                }
-
-                var ft = new FormattedText(label, CultureInfo.CurrentUICulture,
-                    FlowDirection.LeftToRight, this.typeface, this.fontSize, Brushes.Black);
-                return new Size(ft.Width, ft.Height);
-            }
-        }
-
-
-
     }
 }

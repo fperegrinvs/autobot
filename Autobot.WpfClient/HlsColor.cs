@@ -22,9 +22,6 @@ namespace Autobot.WpfClient
         private int saturation;
         private int luminosity;
 
-        /// <include file='doc\ControlPaint.uex' path='docs/doc[@for="ControlPaint.HLSColor.HLSColor"]/*' />
-        /// <devdoc>
-        /// </devdoc>
         public HlsColor(Color color)
         {
             int r = color.R;

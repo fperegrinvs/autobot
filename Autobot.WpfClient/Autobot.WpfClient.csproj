@@ -62,6 +62,7 @@
     <Compile Include="Gestures\Pan.cs" />
     <Compile Include="Gestures\RectangleSelectionGesture.cs" />
     <Compile Include="Gestures\SelectionRectVisual.cs" />
+    <Compile Include="GridShape.cs" />
     <Compile Include="HlsColor.cs" />
     <Compile Include="PerfTimer.cs" />
     <Compile Include="QuadTree.cs" />
@@ -81,6 +82,9 @@
   <ItemGroup>
     <Compile Include="..\Autobot.Common\CarData.cs">
       <Link>CarData.cs</Link>
+    </Compile>
+    <Compile Include="..\Autobot.Common\SenseData.cs">
+      <Link>SenseData.cs</Link>
     </Compile>
     <Compile Include="..\Autobot.Common\Message.cs">
       <Link>Message.cs</Link>

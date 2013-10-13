@@ -510,12 +510,10 @@ namespace Autobot.WpfClient
             this._removeQuanta = SelfThrottlingWorker(this._removeQuanta, this._idealDuration, new QuantizedWorkHandler(this.LazyRemoveNodes));
             this._gcQuanta = SelfThrottlingWorker(this._gcQuanta, this._idealDuration, new QuantizedWorkHandler(this.LazyGarbageCollectNodes));
 
-#if ANIMATE_FEEDBACK
             if (VisualsChanged != null)
             {
                 VisualsChanged(this, new VisualChangeEventArgs(_added, _removed));
             }
-#endif
             if (this._added > 0)
             {
                 this.InvalidateArrange();
@@ -692,7 +690,6 @@ namespace Autobot.WpfClient
 
         }
 
-
         /// <summary>
         /// Split a rectangle into 2 and add them to the regions list.
         /// </summary>
@@ -815,36 +812,6 @@ namespace Autobot.WpfClient
 
             return count;
         }
-
-#if DEBUG_DUMP
-        public void ShowQuadTree(bool show)
-        {
-            if (show)
-            {
-                _index.ShowQuadTree(_content);
-            }
-            else
-            {
-                RebuildVisuals();
-            }
-        }
-
-        public void Dump(string fileName)
-        {
-            using (StreamWriter w = new StreamWriter(fileName))
-            {
-                using (LogWriter log = new LogWriter(w))
-                {
-                    log.Open("QuadTree");
-                    _index.Dump(log);
-                    log.Open("Other");
-                    log.WriteAttribute("MaxDepth", log.MaxDepth.ToString(CultureInfo.CurrentUICulture));
-                    log.Close();
-                    log.Close();
-                }
-            }
-        }
-#endif
 
         /// <summary>
         /// Return the full size of this canvas.
@@ -1145,37 +1112,5 @@ namespace Autobot.WpfClient
             this._visibleRegions.Clear();
             this._visibleRegions.Add(this._visible);
         }
-
-
-#if DEBUG_QUAD_TREE
-        public void ShowQuadTree(bool show)
-        {
-            if (show)
-            {
-                _index.ShowQuadTree(_content);
-            }
-            else
-            {
-                RebuildVisuals();
-            }
-        }
-
-        public void Dump(string filename)
-        {
-            using (StreamWriter w = new StreamWriter(filename))
-            {
-                using (LogWriter log = new LogWriter(w))
-                {
-                    log.Open("QuadTree");
-                    _index.Dump(log);
-                    log.Open("Other");
-                    log.WriteAttribute("MaxDepth", log.MaxDepth.ToString());
-                    log.Close();
-                    log.Close();
-                }
-            }
-        }
-#endif
     }
-
 }

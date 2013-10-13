@@ -209,7 +209,7 @@ namespace Autobot.Server
             {
                 var sense = new SenseData();
                 sense.Distance = ev3.Sensor1.Read();
-                sense.Angle = ev3.Data.Direction + ev3.MotorA.GetTachoCount();
+                sense.Angle = (ev3.Data.Direction + ev3.MotorA.GetTachoCount()) % 360;
 
                 var movement = ev3.GetMovement();
                 sense.PositionX = ev3.Data.PosX + movement.Item1;
