@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Autobot.Client", "Autobot.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Autobot.Common", "Autobot.Common\Autobot.Common.csproj", "{8511D714-6532-4C11-8489-2C024A46E79A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoBot.FormsClient", "AutoBot.FormsClient\AutoBot.FormsClient.csproj", "{DD42175E-0715-44AF-9681-7BE2EEFB04AE}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Autobot.Brick", "Autobot.Brick\Autobot.Brick.csproj", "{24BBF6C1-E45B-4D10-9F53-53ADA948CCA2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Autobot.Brick.Tests", "Autobot.Brick.Tests\Autobot.Brick.Tests.csproj", "{439BCC13-9073-4E65-A98D-51B2BE778406}"
@@ -33,10 +31,6 @@ Global
 		{8511D714-6532-4C11-8489-2C024A46E79A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8511D714-6532-4C11-8489-2C024A46E79A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8511D714-6532-4C11-8489-2C024A46E79A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DD42175E-0715-44AF-9681-7BE2EEFB04AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DD42175E-0715-44AF-9681-7BE2EEFB04AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DD42175E-0715-44AF-9681-7BE2EEFB04AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DD42175E-0715-44AF-9681-7BE2EEFB04AE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{24BBF6C1-E45B-4D10-9F53-53ADA948CCA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{24BBF6C1-E45B-4D10-9F53-53ADA948CCA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24BBF6C1-E45B-4D10-9F53-53ADA948CCA2}.Release|Any CPU.ActiveCfg = Release|Any CPU

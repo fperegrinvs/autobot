@@ -8,7 +8,15 @@ namespace Autobot.Server
 
     using Autotob.Brick.EV3;
 
-    public static class TruckExtensions
+    public class Tank : Brick<IRSensor, Sensor, Sensor, Sensor, CarData>
+    {
+        public Tank(string connection) : base(connection)
+        {
+            
+        }
+    }
+
+    public static class TankExtensions
     {
         static void WaitForMotorToStop(this Motor motor, int? tacho = null)
         {
@@ -73,13 +81,12 @@ namespace Autobot.Server
             }
         }
 
-        public static void Speed<TData>(
-            this Brick<IRSensor, Sensor, Sensor, Sensor, TData> ev3, int speed) where TData : new()
+        public static void Speed(this Tank ev3, int speed)
         {
             ev3.Vehicle.Forward(Convert.ToSByte(speed));
         }
 
-        public static void Turn<TData>(this Brick<IRSensor, Sensor, Sensor, Sensor, TData> ev3, int turn, int speed) where TData : new()
+        public static void Turn(this Tank ev3, int turn, int speed)
         {
             ev3.Vehicle.TurnRightForward(Convert.ToSByte(speed), Convert.ToSByte(turn));
         }
@@ -90,7 +97,7 @@ namespace Autobot.Server
         /// <param name="ev3"></param>
         /// <param name="distance"></param>
         /// <param name="power"></param>
-        public static void Forward(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3, double distance = 1, sbyte power = 80)
+        public static void Forward(this Tank ev3, double distance = 1, sbyte power = 80)
         {
             lock (ev3.Data.MoveLock)
             {
@@ -126,7 +133,7 @@ namespace Autobot.Server
         }
 
 
-        public static Tuple<double, double> GetMovement(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3)
+        public static Tuple<double, double> GetMovement(this Tank ev3)
         {
             var angle = ev3.Data.Direction / 180.0 * Math.PI;
 
@@ -148,13 +155,13 @@ namespace Autobot.Server
             return new Tuple<double, double>(deltaX, deltaY);
         }
 
-        public static void Back(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3, double distance = 1, sbyte power = 80)
+        public static void Back(this Tank ev3, double distance = 1, sbyte power = 80)
         {
             power = Convert.ToSByte(power * -1);
             Forward(ev3, distance, power);
         }
 
-        public static void Left(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3, double distance = 1, sbyte power = 80)
+        public static void Left(this Tank ev3, double distance = 1, sbyte power = 80)
         {
             var originalDirection = ev3.Data.Direction;
             ev3.Vehicle.TurnLeftForward(80, 100, Convert.ToUInt16(Math.Round(360 * distance, 0)), false, true);
@@ -173,7 +180,7 @@ namespace Autobot.Server
             ev3.Data.PosY += dy;
         }
 
-        public static void Right(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3, double distance = 1, sbyte power = 80)
+        public static void Right(this Tank ev3, double distance = 1, sbyte power = 80)
         {
             var originalDirection = ev3.Data.Direction;
             ev3.Vehicle.TurnRightForward(80, 100, Convert.ToUInt16(Math.Round(360 * distance, 0)), false, true);
@@ -192,7 +199,7 @@ namespace Autobot.Server
             ev3.Data.PosY += dy;
         }
 
-        public static List<SenseData> Sense(this Brick<IRSensor, Sensor, Sensor, Sensor, CarData> ev3, int angle = 360)
+        public static List<SenseData> Sense(this Tank ev3, int angle = 360)
         {
             const uint Angle = 15u;
             int size = angle / (int)Angle;

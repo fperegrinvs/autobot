@@ -47,14 +47,14 @@
         /// <summary>
         /// Bot instance
         /// </summary>
-        public Brick<IRSensor, Sensor, Sensor, Sensor, CarData> Bot { get; set; }
+        public Tank Bot { get; set; }
 
         /// <summary>
         /// Turning bot on
         /// </summary>
         public void On()
         {
-            this.Bot = new Brick<IRSensor, Sensor, Sensor, Sensor, CarData>("EV3");
+            this.Bot = new Tank("EV3");
             try
             {
                 // register the compass sensor

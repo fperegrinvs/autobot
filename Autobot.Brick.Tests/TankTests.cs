@@ -4,13 +4,10 @@ namespace Autobot.Brick.Tests
 {
     using System.Diagnostics;
 
-    using Autobot.Common;
     using Autobot.Server;
 
-    using Autotob.Brick.EV3;
-
     [TestClass]
-    public class BrickTests
+    public class TankTests
     {
         public class TestData
         {
@@ -20,7 +17,7 @@ namespace Autobot.Brick.Tests
         [TestMethod]
         public void Right()
         {
-            var bot = new Brick<IRSensor, Sensor, Sensor, Sensor, CarData>("usb");
+            var bot = new Tank("usb");
             // connect to lego
             bot.Connection.Open();
 
@@ -35,7 +32,7 @@ namespace Autobot.Brick.Tests
         [TestMethod]
         public void SenseTest()
         {
-            var bot = new Brick<IRSensor, Sensor, Sensor, Sensor, CarData>("usb");
+            var bot = new Tank("usb");
             // connect to lego
             bot.Connection.Open();
 

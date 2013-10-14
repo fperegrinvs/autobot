@@ -54,7 +54,7 @@
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MainActivity.TcpServer.cs" />
-    <Compile Include="TruckExtensions.cs" />
+    <Compile Include="TankExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />

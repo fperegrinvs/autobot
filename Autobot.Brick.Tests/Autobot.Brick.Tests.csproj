@@ -107,8 +107,8 @@
     <Compile Include="..\Autobot.Brick\Utilities.cs">
       <Link>Utilities.cs</Link>
     </Compile>
-    <Compile Include="..\Autobot.Server\TruckExtensions.cs">
-      <Link>TruckExtensions.cs</Link>
+    <Compile Include="..\Autobot.Server\TankExtensions.cs">
+      <Link>TankExtensions.cs</Link>
     </Compile>
     <Compile Include="..\Autobot.Common\CarData.cs">
       <Link>CarData.cs</Link>
@@ -116,7 +116,7 @@
     <Compile Include="..\Autobot.Common\SenseData.cs">
       <Link>SenseData.cs</Link>
     </Compile>
-    <Compile Include="BrickTests.cs" />
+    <Compile Include="TankTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="usb.cs" />
   </ItemGroup>
@@ -142,7 +142,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties ProjectLinkerExcludeFilter="\\?desktop(\\.*)?$;\\?silverlight(\\.*)?$;\.desktop;\.silverlight;\.xaml;^service references(\\.*)?$;\.clientconfig;^web references(\\.*)?$" ProjectLinkReference="24bbf6c1-e45b-4d10-9f53-53ada948cca2" />
+      <UserProperties ProjectLinkReference="24bbf6c1-e45b-4d10-9f53-53ada948cca2" ProjectLinkerExcludeFilter="\\?desktop(\\.*)?$;\\?silverlight(\\.*)?$;\.desktop;\.silverlight;\.xaml;^service references(\\.*)?$;\.clientconfig;^web references(\\.*)?$" />
     </VisualStudio>
   </ProjectExtensions>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
