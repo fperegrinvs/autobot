@@ -71,6 +71,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Obstacle.cs" />
     <Compile Include="RemoteControl.cs" />
     <Compile Include="GamepadState.cs" />
     <Compile Include="Gestures\AutoScroll.cs" />

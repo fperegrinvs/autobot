@@ -53,9 +53,43 @@ namespace Autobot.WpfClient
 
         private bool isVisited;
 
+        /// <summary>
+        /// Tile has changed ? Needs redraw ?
+        /// </summary>
         public bool Changed { get; private set;  }
 
+        /// <summary>
+        /// List of obstacles
+        /// </summary>
+        private readonly List<Obstacle> obstacleList = new List<Obstacle>();
+
+        /// <summary>
+        /// Collection of obstacles
+        /// </summary>
+        public IEnumerable<Obstacle> Obstacles
+        {
+            get
+            {
+                return obstacleList;
+            }
+        }
+
+        /// <summary>
+        /// Add an obstacle to the world map
+        /// </summary>
+        /// <param name="obstacle">obstacle to be added</param>
+        public void AddObstacle(Obstacle obstacle)
+        {
+            this.obstacleList.Add(obstacle);
+            this.Changed = true;
+        }
+
         public double Radius { get; private set; }
+
+        /// <summary>
+        /// Display obstacles locations?
+        /// </summary>
+        public bool ShowObstacles { get; set; }
 
         public Point Center { get; private set; }
 

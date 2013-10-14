@@ -24,6 +24,7 @@
                     <MenuItem Name="AutoControlMenuItem" Header="Auto Control" Click="OnAutoControl" IsChecked="False"/>
                     <MenuItem Header="Manual Controls" Click="OnManualControl" IsChecked="False"/>
                     <MenuItem Header="Show Camera" Click="OnShowCamera" IsChecked="False"/>
+                    <MenuItem Header="Show Obstacles" Click="OnShowObstacles" IsChecked="False"/>
                     <MenuItem Header="Config..." Click="OnConfig" />
                 </MenuItem>
                 <MenuItem Header="_View">

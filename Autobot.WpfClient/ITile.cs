@@ -1,5 +1,6 @@
 ﻿namespace Autobot.WpfClient
 {
+    using System.Collections.Generic;
     using System.Windows;
 
     /// <summary>
@@ -11,6 +12,17 @@
         /// Tile boundaries
         /// </summary>
         Rect Bounds { get; set; }
+
+        /// <summary>
+        /// Collection of obstacles
+        /// </summary>
+        IEnumerable<Obstacle> Obstacles { get; }
+
+        /// <summary>
+        /// Add an obstacle to the world map
+        /// </summary>
+        /// <param name="obstacle">obstacle to be added</param>
+        void AddObstacle(Obstacle obstacle);
     }
 
     /// <summary>

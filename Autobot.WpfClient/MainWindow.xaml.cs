@@ -287,5 +287,10 @@ namespace Autobot.WpfClient
         {
             throw new NotImplementedException();
         }
+
+        private void OnShowObstacles(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
