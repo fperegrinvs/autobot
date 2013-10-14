@@ -10,7 +10,7 @@ namespace Autobot.WpfClient
 
     using Autobot.Common;
 
-    public class GridShape : IVirtualChild, ITile
+    public class TileShape : IVirtualChild, ITile
     {
         // border
         protected static Brush BorderStroke = Brushes.Black;
@@ -90,7 +90,7 @@ namespace Autobot.WpfClient
             get { return this.visual; }
         }
 
-        public GridShape(Rect bounds)
+        public TileShape(Rect bounds)
         {
             this.Bounds = bounds;
             this.Radius = bounds.Height / 2;
@@ -182,6 +182,19 @@ namespace Autobot.WpfClient
         public void DisposeVisual()
         {
             this.visual = null;
+        }
+
+        Rect ITile.Bounds
+        {
+            get
+            {
+                return Bounds;
+            }
+            set
+            {
+                Bounds = value;
+                this.Changed = true;
+            }
         }
     }
 }

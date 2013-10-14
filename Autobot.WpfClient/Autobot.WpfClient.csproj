@@ -79,7 +79,7 @@
     <Compile Include="Gestures\Pan.cs" />
     <Compile Include="Gestures\RectangleSelectionGesture.cs" />
     <Compile Include="Gestures\SelectionRectVisual.cs" />
-    <Compile Include="GridShape.cs" />
+    <Compile Include="TileShape.cs" />
     <Compile Include="HlsColor.cs" />
     <Compile Include="ITile.cs" />
     <Compile Include="PerfTimer.cs" />
@@ -94,6 +94,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="World.cs" />
+    <Compile Include="WorldShape.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

@@ -18,5 +18,6 @@ namespace Autobot.Common
         RemoteControl = 13,
         Speed = 14,
         Turn = 15,
+        CorrectPosition = 16,
     }
 }

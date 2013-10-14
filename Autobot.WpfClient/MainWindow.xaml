@@ -72,7 +72,7 @@
 
             <ScrollViewer x:Name="Scroller" HorizontalScrollBarVisibility="Auto" 
                   VerticalScrollBarVisibility="Auto" CanContentScroll="True">
-                <wpfClient:VirtualCanvas x:Name="Graph"/>
+                <wpfClient:WorldShape x:Name="Graph"/>
             </ScrollViewer>
         </DockPanel>
 

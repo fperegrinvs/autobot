@@ -10,7 +10,7 @@ namespace Autobot.Server
 
     public partial class MainActivity
     {
-        private Socket serverSocket = null;
+        private Socket serverSocket;
         private byte[] byteData = new byte[1024];
 
         public void OpenTcp()
@@ -34,7 +34,7 @@ namespace Autobot.Server
             }
             catch (Exception ex)
             {
-                System.Console.WriteLine("@ ListenForClient" + ex.Message);
+                Console.WriteLine("@ ListenForClient" + ex.Message);
                 Toast.MakeText(this, "ListenForClient:" + ex.Message, ToastLength.Long).Show();
             }
         }
@@ -60,8 +60,6 @@ namespace Autobot.Server
             }
         }
 
-        private DateTime LastCommand { get; set; }
-
         /// <summary>
         /// Receive message
         /// </summary>
@@ -72,7 +70,6 @@ namespace Autobot.Server
             {
                 var clientSocket = (Socket)ar.AsyncState;
                 clientSocket.EndReceive(ar);
-                LastCommand = DateTime.Now;
 
                 var msgReceived = new Message(this.byteData);
 
@@ -90,60 +87,64 @@ namespace Autobot.Server
                         Bot.Speed(msgReceived.Parameter1);
                         break;
                     case MessageType.Turn:
-						Bot.Turn(msgReceived.Parameter1, msgReceived.Parameter2);
+                        Bot.Turn(msgReceived.Parameter1, msgReceived.Parameter2);
+                        break;
+                    case MessageType.CorrectPosition:
+                        Bot.Data.PosX += msgReceived.Parameter1;
+                        Bot.Data.PosY += msgReceived.Parameter2;
                         break;
                     case MessageType.Forward:
-                    {
-                        var distance = msgReceived.Parameter1;
-                        var power = Convert.ToSByte(msgReceived.Parameter2);
-                        if (distance == 0)
                         {
-                            distance = 1;
-                        }
-                        
-                        if (power == 0)
-                        {
-                            power = 20;
-                        }
+                            var distance = msgReceived.Parameter1;
+                            var power = Convert.ToSByte(msgReceived.Parameter2);
+                            if (distance == 0)
+                            {
+                                distance = 1;
+                            }
 
-                        Bot.Forward(distance, power);
-                        msgToSend.Command = MessageType.Ack;
-                        break;
-                    }
+                            if (power == 0)
+                            {
+                                power = 20;
+                            }
+
+                            Bot.Forward(distance, power);
+                            msgToSend.Command = MessageType.Ack;
+                            break;
+                        }
                     case MessageType.Back:
-                    {
-                        var distance = msgReceived.Parameter1;
-                        var power = Convert.ToSByte(msgReceived.Parameter2);
-                        if (distance == 0)
                         {
-                            distance = 1;
-                        }
+                            var distance = msgReceived.Parameter1;
+                            var power = Convert.ToSByte(msgReceived.Parameter2);
+                            if (distance == 0)
+                            {
+                                distance = 1;
+                            }
 
-                        if (power == 0)
-                        {
-                            power = 20;
-                        }
+                            if (power == 0)
+                            {
+                                power = 20;
+                            }
 
-                        Bot.Back(distance, power);
-                        msgToSend.Command = MessageType.Ack;
-                        break;
-                    }
+                            Bot.Back(distance, power);
+                            msgToSend.Command = MessageType.Ack;
+                            break;
+                        }
                     case MessageType.Left:
-                    {
-                        var distance = msgReceived.Parameter1 > 0 ? msgReceived.Parameter1 / 100 : 1;
-                        var power = msgReceived.Parameter2 != 0 ? msgReceived.Parameter2 : 80;
-                        Bot.Left(distance, Convert.ToSByte(power));
-                        msgToSend.Command = MessageType.Ack;
-                        break;
-                    }
+                        {
+                            var distance = msgReceived.Parameter1 > 0 ? msgReceived.Parameter1 / 100 : 1;
+                            var power = msgReceived.Parameter2 != 0 ? msgReceived.Parameter2 : 80;
+                            Bot.Left(distance, Convert.ToSByte(power));
+                            msgToSend.Command = MessageType.Ack;
+                            break;
+                        }
                     case MessageType.Right:
-                    {
-                        var distance = msgReceived.Parameter1 > 0 ? msgReceived.Parameter1 / 100 : 1;
-                        var power = msgReceived.Parameter2 != 0 ? msgReceived.Parameter2 : 80;
-                        Bot.Right(distance, Convert.ToSByte(power));
-                        msgToSend.Command = MessageType.Ack;
-                        break;
-                    }
+                        {
+                            var distance = msgReceived.Parameter1 > 0 ? msgReceived.Parameter1 / 100 : 1;
+                            var power = msgReceived.Parameter2 != 0 ? msgReceived.Parameter2 : 80;
+                            Bot.Right(distance, Convert.ToSByte(power));
+                            msgToSend.Command = MessageType.Ack;
+                            break;
+                        }
                     case MessageType.Sense:
                         if (msgReceived.Parameter1 == 0)
                         {
@@ -169,12 +170,12 @@ namespace Autobot.Server
                 //Send the name of the users in the chat room
                 clientSocket.BeginSend(message, 0, message.Length, SocketFlags.None, this.OnSend, clientSocket);
 
-				
-				//Once the client connects then start 
-				//receiving the commands from her
-				clientSocket.BeginReceive(this.byteData, 0,
-				                          this.byteData.Length, SocketFlags.None,
-				                          this.OnReceive, clientSocket);
+
+                //Once the client connects then start 
+                //receiving the commands from her
+                clientSocket.BeginReceive(this.byteData, 0,
+                                          this.byteData.Length, SocketFlags.None,
+                                          this.OnReceive, clientSocket);
             }
             catch (Exception ex)
             {
