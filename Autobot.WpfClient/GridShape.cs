@@ -10,7 +10,7 @@ namespace Autobot.WpfClient
 
     using Autobot.Common;
 
-    public class GridShape : IVirtualChild
+    public class GridShape : IVirtualChild, ITile
     {
         // border
         protected static Brush BorderStroke = Brushes.Black;

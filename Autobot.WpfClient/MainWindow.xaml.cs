@@ -64,7 +64,7 @@ namespace Autobot.WpfClient
             grid.Translate.Changed += this.OnScaleChanged;
 
             grid.Background = new SolidColorBrush(Color.FromRgb(0xd0, 0xd0, 0xd0));
-            grid.ContentCanvas.Background = Brushes.White;
+            grid.ContentCanvas.Background = grid.Background;
 
             AllocateNodes();
         }
@@ -73,7 +73,7 @@ namespace Autobot.WpfClient
         {
             zoom.Zoom = 1;
             zoom.Offset = new Point(0, 0);
-            var shape = new GridShape(new Rect(0, 0, 50, 50));
+            var shape = new GridShape(new Rect(0, 0, 30, 30));
             shape.IsFree = true;
             shape.IsVisited = true;
             shape.Sensor = new List<SenseData>();
@@ -89,7 +89,7 @@ namespace Autobot.WpfClient
             }
             grid.AddVirtualChild(shape);
 
-            shape = new GridShape(new Rect(50, 50, 50, 50));
+            shape = new GridShape(new Rect(30, 30, 30, 30));
             shape.IsFree = true;
             shape.IsVisited = true;
             shape.Sensor = null;
