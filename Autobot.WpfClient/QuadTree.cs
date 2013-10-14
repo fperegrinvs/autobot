@@ -10,6 +10,7 @@ namespace Autobot.WpfClient
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Linq;
     using System.Windows;
 
     /// <summary>
@@ -21,19 +22,15 @@ namespace Autobot.WpfClient
     /// </summary>
     public class QuadTree<T> where T : class
     {
-        Rect _bounds; // overall bounds we are indexing.
-        Quadrant _root;
-        IDictionary<T, Quadrant> _table;
+        Rect bounds; // overall bounds we are indexing.
+        Quadrant root;
+        IDictionary<T, Quadrant> table;
 
         /// <summary>
         /// Each node stored in the tree has a position, width & height.
         /// </summary>
         internal class QuadNode
         {
-            Rect _bounds;
-            QuadNode _next; // linked in a circular list.
-            T _node; // the actual visual object being stored here.
-
             /// <summary>
             /// Construct new QuadNode to wrap the given node with given bounds
             /// </summary>
@@ -41,35 +38,24 @@ namespace Autobot.WpfClient
             /// <param name="bounds">The bounds of that node</param>
             public QuadNode(T node, Rect bounds)
             {
-                this._node = node;
-                this._bounds = bounds;
+                this.Node = node;
+                this.Bounds = bounds;
             }
 
             /// <summary>
             /// The node
             /// </summary>
-            public T Node
-            {
-                get { return this._node; }
-                set { this._node = value; }
-            }
+            public T Node { get; set; }
 
             /// <summary>
             /// The Rect bounds of the node
             /// </summary>
-            public Rect Bounds
-            {
-                get { return this._bounds; }
-            }
+            public Rect Bounds { get; private set; }
 
             /// <summary>
             /// QuadNodes form a linked list in the Quadrant.
             /// </summary>
-            public QuadNode Next
-            {
-                get { return this._next; }
-                set { this._next = value; }
-            }
+            public QuadNode Next { get; set; }
         }
 
 
@@ -80,17 +66,17 @@ namespace Autobot.WpfClient
         /// </summary>
         internal class Quadrant
         {
-            Quadrant _parent;
-            Rect _bounds; // quadrant bounds.
+            readonly Quadrant parent;
+            Rect quadrantBounds; // quadrant bounds.
 
-            QuadNode _nodes; // nodes that overlap the sub quadrant boundaries.
+            QuadNode nodes; // nodes that overlap the sub quadrant boundaries.
 
             // The quadrant is subdivided when nodes are inserted that are 
             // completely contained within those subdivisions.
-            Quadrant _topLeft;
-            Quadrant _topRight;
-            Quadrant _bottomLeft;
-            Quadrant _bottomRight;
+            Quadrant topLeft;
+            Quadrant topRight;
+            Quadrant bottomLeft;
+            Quadrant bottomRight;
 
             /// <summary>
             /// Construct new Quadrant with a given bounds all nodes stored inside this quadrant
@@ -100,14 +86,16 @@ namespace Autobot.WpfClient
             /// <param name="bounds">The bounds of this quadrant</param>
             public Quadrant(Quadrant parent, Rect bounds)
             {
-                this._parent = parent;
+                this.parent = parent;
+                // ReSharper disable CompareOfFloatsByEqualityOperator
                 Debug.Assert(bounds.Width != 0 && bounds.Height != 0);
                 if (bounds.Width == 0 || bounds.Height == 0)                
                 {
                     // todo: localize
                     throw new ArgumentException("Bounds of quadrant cannot be zero width or height");
                 }
-                this._bounds = bounds;
+                // ReSharper restore CompareOfFloatsByEqualityOperator
+                this.quadrantBounds = bounds;
             }
 
             /// <summary>
@@ -115,7 +103,7 @@ namespace Autobot.WpfClient
             /// </summary>
             internal Quadrant Parent
             {
-                get { return this._parent; }
+                get { return this.parent; }
             }
 
             /// <summary>
@@ -123,7 +111,7 @@ namespace Autobot.WpfClient
             /// </summary>
             internal Rect Bounds 
             { 
-                get { return this._bounds; } 
+                get { return this.quadrantBounds; } 
             }
 
             /// <summary>
@@ -134,6 +122,7 @@ namespace Autobot.WpfClient
             /// <returns></returns>
             internal Quadrant Insert(T node, Rect bounds)
             {
+                // ReSharper disable CompareOfFloatsByEqualityOperator
                 Debug.Assert(bounds.Width != 0 && bounds.Height != 0);
                 if (bounds.Width == 0 || bounds.Height == 0)
                 {
@@ -141,59 +130,60 @@ namespace Autobot.WpfClient
                     throw new ArgumentException("Bounds of quadrant cannot be zero width or height");
                 }
 
-                double w = this._bounds.Width / 2;
+                double w = this.quadrantBounds.Width / 2;
                 if (w == 0)
                 {
                     w = 1;
                 }
-                double h = this._bounds.Height / 2;
+                double h = this.quadrantBounds.Height / 2;
                 if (h == 0)
                 {
                     h = 1;
                 }
+                // ReSharper restore CompareOfFloatsByEqualityOperator
 
                 // assumption that the Rect struct is almost as fast as doing the operations
                 // manually since Rect is a value type.
 
-                Rect topLeft = new Rect(this._bounds.Left, this._bounds.Top, w, h);
-                Rect topRight = new Rect(this._bounds.Left + w, this._bounds.Top, w, h);
-                Rect bottomLeft = new Rect(this._bounds.Left, this._bounds.Top + h, w, h);
-                Rect bottomRight = new Rect(this._bounds.Left + w, this._bounds.Top + h, w, h);
+                Rect topLeft = new Rect(this.quadrantBounds.Left, this.quadrantBounds.Top, w, h);
+                Rect topRight = new Rect(this.quadrantBounds.Left + w, this.quadrantBounds.Top, w, h);
+                Rect bottomLeft = new Rect(this.quadrantBounds.Left, this.quadrantBounds.Top + h, w, h);
+                Rect bottomRight = new Rect(this.quadrantBounds.Left + w, this.quadrantBounds.Top + h, w, h);
 
                 Quadrant child = null;
 
                 // See if any child quadrants completely contain this node.
                 if (topLeft.Contains(bounds))
                 {
-                    if ( this._topLeft == null)
+                    if ( this.topLeft == null)
                     {
-                        this._topLeft = new Quadrant(this, topLeft);
+                        this.topLeft = new Quadrant(this, topLeft);
                     }
-                    child = this._topLeft;
+                    child = this.topLeft;
                 }
                 else if (topRight.Contains(bounds))
                 {
-                    if ( this._topRight == null)
+                    if ( this.topRight == null)
                     {
-                        this._topRight = new Quadrant(this, topRight);
+                        this.topRight = new Quadrant(this, topRight);
                     }
-                    child = this._topRight;
+                    child = this.topRight;
                 }
                 else if (bottomLeft.Contains(bounds))
                 {
-                    if ( this._bottomLeft == null)
+                    if ( this.bottomLeft == null)
                     {
-                        this._bottomLeft = new Quadrant(this, bottomLeft);
+                        this.bottomLeft = new Quadrant(this, bottomLeft);
                     }
-                    child = this._bottomLeft;
+                    child = this.bottomLeft;
                 }
                 else if (bottomRight.Contains(bounds))
                 {
-                    if ( this._bottomRight == null)
+                    if ( this.bottomRight == null)
                     {
-                        this._bottomRight = new Quadrant(this, bottomRight);
+                        this.bottomRight = new Quadrant(this, bottomRight);
                     }
-                    child = this._bottomRight;
+                    child = this.bottomRight;
                 }
 
                 if (child != null)
@@ -203,18 +193,18 @@ namespace Autobot.WpfClient
                 else
                 {
                     QuadNode n = new QuadNode(node, bounds);
-                    if (this._nodes == null)
+                    if (this.nodes == null)
                     {
                         n.Next = n;
                     }
                     else
                     {
                         // link up in circular link list.
-                        QuadNode x = this._nodes;
+                        QuadNode x = this.nodes;
                         n.Next = x.Next;
                         x.Next = n;
                     }
-                    this._nodes = n;
+                    this.nodes = n;
                     return this;
                 }
             }
@@ -228,39 +218,39 @@ namespace Autobot.WpfClient
             internal void GetIntersectingNodes(List<QuadNode> nodes, Rect bounds)
             {
                 if (bounds.IsEmpty) return;
-                double w = this._bounds.Width / 2;
-                double h = this._bounds.Height / 2;
+                double w = this.quadrantBounds.Width / 2;
+                double h = this.quadrantBounds.Height / 2;
 
                 // assumption that the Rect struct is almost as fast as doing the operations
                 // manually since Rect is a value type.
 
-                Rect topLeft = new Rect(this._bounds.Left, this._bounds.Top, w, h);
-                Rect topRight = new Rect(this._bounds.Left + w, this._bounds.Top, w, h);
-                Rect bottomLeft = new Rect(this._bounds.Left, this._bounds.Top + h, w, h);
-                Rect bottomRight = new Rect(this._bounds.Left + w, this._bounds.Top + h, w, h);
+                Rect topLeft = new Rect(this.quadrantBounds.Left, this.quadrantBounds.Top, w, h);
+                Rect topRight = new Rect(this.quadrantBounds.Left + w, this.quadrantBounds.Top, w, h);
+                Rect bottomLeft = new Rect(this.quadrantBounds.Left, this.quadrantBounds.Top + h, w, h);
+                Rect bottomRight = new Rect(this.quadrantBounds.Left + w, this.quadrantBounds.Top + h, w, h);
 
                 // See if any child quadrants completely contain this node.
-                if (topLeft.IntersectsWith(bounds) && this._topLeft != null)
+                if (topLeft.IntersectsWith(bounds) && this.topLeft != null)
                 {
-                    this._topLeft.GetIntersectingNodes(nodes, bounds);
+                    this.topLeft.GetIntersectingNodes(nodes, bounds);
                 }
 
-                if (topRight.IntersectsWith(bounds) && this._topRight != null)
+                if (topRight.IntersectsWith(bounds) && this.topRight != null)
                 {
-                    this._topRight.GetIntersectingNodes(nodes, bounds);
+                    this.topRight.GetIntersectingNodes(nodes, bounds);
                 }
 
-                if (bottomLeft.IntersectsWith(bounds) && this._bottomLeft != null)
+                if (bottomLeft.IntersectsWith(bounds) && this.bottomLeft != null)
                 {
-                    this._bottomLeft.GetIntersectingNodes(nodes, bounds);
+                    this.bottomLeft.GetIntersectingNodes(nodes, bounds);
                 }
 
-                if (bottomRight.IntersectsWith(bounds) && this._bottomRight != null)
+                if (bottomRight.IntersectsWith(bounds) && this.bottomRight != null)
                 {
-                    this._bottomRight.GetIntersectingNodes(nodes, bounds);
+                    this.bottomRight.GetIntersectingNodes(nodes, bounds);
                 }
 
-                GetIntersectingNodes(this._nodes, nodes, bounds);
+                GetIntersectingNodes(this.nodes, nodes, bounds);
             }
 
             /// <summary>
@@ -294,42 +284,42 @@ namespace Autobot.WpfClient
             internal bool HasIntersectingNodes(Rect bounds)
             {
                 if (bounds.IsEmpty) return false;
-                double w = this._bounds.Width / 2;
-                double h = this._bounds.Height / 2;
+                double w = this.quadrantBounds.Width / 2;
+                double h = this.quadrantBounds.Height / 2;
 
                 // assumption that the Rect struct is almost as fast as doing the operations
                 // manually since Rect is a value type.
 
-                Rect topLeft = new Rect(this._bounds.Left, this._bounds.Top, w, h);
-                Rect topRight = new Rect(this._bounds.Left + w, this._bounds.Top, w, h);
-                Rect bottomLeft = new Rect(this._bounds.Left, this._bounds.Top + h, w, h);
-                Rect bottomRight = new Rect(this._bounds.Left + w, this._bounds.Top + h, w, h);
+                Rect topLeft = new Rect(this.quadrantBounds.Left, this.quadrantBounds.Top, w, h);
+                Rect topRight = new Rect(this.quadrantBounds.Left + w, this.quadrantBounds.Top, w, h);
+                Rect bottomLeft = new Rect(this.quadrantBounds.Left, this.quadrantBounds.Top + h, w, h);
+                Rect bottomRight = new Rect(this.quadrantBounds.Left + w, this.quadrantBounds.Top + h, w, h);
 
                 bool found = false;
 
                 // See if any child quadrants completely contain this node.
-                if (topLeft.IntersectsWith(bounds) && this._topLeft != null)
+                if (topLeft.IntersectsWith(bounds) && this.topLeft != null)
                 {
-                    found = this._topLeft.HasIntersectingNodes(bounds);
+                    found = this.topLeft.HasIntersectingNodes(bounds);
                 }
 
-                if (!found && topRight.IntersectsWith(bounds) && this._topRight != null)
+                if (!found && topRight.IntersectsWith(bounds) && this.topRight != null)
                 {
-                    found = this._topRight.HasIntersectingNodes(bounds);
+                    found = this.topRight.HasIntersectingNodes(bounds);
                 }
 
-                if (!found && bottomLeft.IntersectsWith(bounds) && this._bottomLeft != null)
+                if (!found && bottomLeft.IntersectsWith(bounds) && this.bottomLeft != null)
                 {
-                    found = this._bottomLeft.HasIntersectingNodes(bounds);
+                    found = this.bottomLeft.HasIntersectingNodes(bounds);
                 }
 
-                if (!found && bottomRight.IntersectsWith(bounds) && this._bottomRight != null)
+                if (!found && bottomRight.IntersectsWith(bounds) && this.bottomRight != null)
                 {
-                    found = this._bottomRight.HasIntersectingNodes(bounds);
+                    found = this.bottomRight.HasIntersectingNodes(bounds);
                 }
                 if (!found)
                 {
-                    found = HasIntersectingNodes(this._nodes, bounds);
+                    found = HasIntersectingNodes(this.nodes, bounds);
                 }
                 return found;
             }
@@ -365,10 +355,10 @@ namespace Autobot.WpfClient
             internal bool RemoveNode(T node)
             {
                 bool rc = false;
-                if (this._nodes != null)
+                if (this.nodes != null)
                 {
-                    QuadNode p = this._nodes;
-                    while (p.Next.Node != node && p.Next != this._nodes)
+                    QuadNode p = this.nodes;
+                    while (p.Next.Node != node && p.Next != this.nodes)
                     {
                         p = p.Next;
                     }
@@ -379,11 +369,11 @@ namespace Autobot.WpfClient
                         if (p == n)
                         {
                             // list goes to empty
-                            this._nodes = null;
+                            this.nodes = null;
                         }
                         else
                         {
-                            if (this._nodes == n) this._nodes = p;
+                            if (this.nodes == n) this.nodes = p;
                             p.Next = n.Next;
                         }
                     }
@@ -399,39 +389,43 @@ namespace Autobot.WpfClient
         /// </summary>
         public Rect Bounds
         {
-            get { return this._bounds; }
-            set { this._bounds = value; this.ReIndex();  }
+            get { return this.bounds; }
+            set { this.bounds = value; this.ReIndex();  }
         }
 
         /// <summary>
         /// Insert a node with given bounds into this QuadTree.
         /// </summary>
         /// <param name="node">The node to insert</param>
-        /// <param name="bounds">The bounds of this node</param>
-        public void Insert(T node, Rect bounds)
+        /// <param name="boundsRect">The bounds of this node</param>
+        public void Insert(T node, Rect boundsRect)
         {
-            if (this._bounds.Width == 0 || this._bounds.Height == 0)
+            // ReSharper disable CompareOfFloatsByEqualityOperator
+            if (this.bounds.Width == 0 || this.bounds.Height == 0)
+                // ReSharper restore CompareOfFloatsByEqualityOperator
             {
                 // todo: localize.
                 throw new InvalidOperationException("You must set a non-zero bounds on the QuadTree first");
             }
-            if (bounds.Width == 0 || bounds.Height == 0)
+            // ReSharper disable CompareOfFloatsByEqualityOperator
+            if (boundsRect.Width == 0 || boundsRect.Height == 0)
+                // ReSharper restore CompareOfFloatsByEqualityOperator
             {
                 // todo: localize.
                 throw new InvalidOperationException("Inserted node must have a non-zero width and height");
             } 
-            if (this._root == null)
+            if (this.root == null)
             {
-                this._root = new Quadrant(null, this._bounds);
+                this.root = new Quadrant(null, this.bounds);
             }
 
-            Quadrant parent = this._root.Insert(node, bounds);
+            Quadrant parent = this.root.Insert(node, boundsRect);
 
-            if (this._table == null)
+            if (this.table == null)
             {
-                this._table = new Dictionary<T, Quadrant>();
+                this.table = new Dictionary<T, Quadrant>();
             }
-            this._table[node] = parent;
+            this.table[node] = parent;
 
 
         }
@@ -439,26 +433,23 @@ namespace Autobot.WpfClient
         /// <summary>
         /// Get a list of the nodes that intersect the given bounds.
         /// </summary>
-        /// <param name="bounds">The bounds to test</param>
+        /// <param name="boundsRect">The bounds to test</param>
         /// <returns>List of zero or mode nodes found inside the given bounds</returns>
-        public IEnumerable<T> GetNodesInside(Rect bounds)
+        public IEnumerable<T> GetNodesInside(Rect boundsRect)
         {
-            foreach (QuadNode n in this.GetNodes(bounds))
-            {
-                yield return n.Node;
-            }
+            return this.GetNodes(boundsRect).Select(n => n.Node);
         }
 
         /// <summary>
         /// Get a list of the nodes that intersect the given bounds.
         /// </summary>
-        /// <param name="bounds">The bounds to test</param>
+        /// <param name="boundsRect">The bounds to test</param>
         /// <returns>List of zero or mode nodes found inside the given bounds</returns>
-        public bool HasNodesInside(Rect bounds)
+        public bool HasNodesInside(Rect boundsRect)
         {
-            if (this._root != null)
+            if (this.root != null)
             {
-                this._root.HasIntersectingNodes(bounds);
+                this.root.HasIntersectingNodes(boundsRect);
             }
             return false;
         }
@@ -466,14 +457,14 @@ namespace Autobot.WpfClient
         /// <summary>
         /// Get list of nodes that intersect the given bounds.
         /// </summary>
-        /// <param name="bounds">The bounds to test</param>
+        /// <param name="boundsRect">The bounds to test</param>
         /// <returns>The list of nodes intersecting the given bounds</returns>
-        IEnumerable<QuadNode> GetNodes(Rect bounds)
+        IEnumerable<QuadNode> GetNodes(Rect boundsRect)
         {
-            List<QuadNode> result = new List<QuadNode>();
-            if (this._root != null)
+            var result = new List<QuadNode>();
+            if (this.root != null)
             {
-                this._root.GetIntersectingNodes(result, bounds);
+                this.root.GetIntersectingNodes(result, boundsRect);
             }
             return result;
         }
@@ -485,13 +476,13 @@ namespace Autobot.WpfClient
         /// <returns>True if the node was found and removed.</returns>
         public bool Remove(T node)
         {
-            if (this._table != null)
+            if (this.table != null)
             {
-                Quadrant parent = null;
-                if (this._table.TryGetValue(node, out parent))
+                Quadrant parent;
+                if (this.table.TryGetValue(node, out parent))
                 {
                     parent.RemoveNode(node);
-                    this._table.Remove(node);
+                    this.table.Remove(node);
                     return true;
                 }
             }
@@ -503,8 +494,8 @@ namespace Autobot.WpfClient
         /// </summary>
         void ReIndex()
         {
-            this._root = null;
-            foreach (QuadNode n in this.GetNodes(this._bounds))
+            this.root = null;
+            foreach (QuadNode n in this.GetNodes(this.bounds))
             {
                 // todo: it would be more efficient if we added a code path that allowed
                 // reuse of the QuadNode wrappers.

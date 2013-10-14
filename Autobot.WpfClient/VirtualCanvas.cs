@@ -70,53 +70,57 @@ namespace Autobot.WpfClient
     /// </summary>
     public class VirtualCanvas : VirtualizingPanel, IScrollInfo
     {
-        ScrollViewer _owner;
-        Size _viewPortSize;
-        bool _canHScroll = false;
-        bool _canVScroll = false;
-        QuadTree<IVirtualChild> _index;
-        ObservableCollection<IVirtualChild> _children;
-        Size _smallScrollIncrement = new Size(10, 10);
-        Canvas _content;
-        Border _backdrop;
-        TranslateTransform _translate;
-        ScaleTransform _scale;
-        Size _extent;
-        IList<Rect> _dirtyRegions = new List<Rect>();
-        IList<Rect> _visibleRegions = new List<Rect>();
-        IDictionary<IVirtualChild, int> _visualPositions;
-        int _nodeCollectCycle;
-        bool _done = true;
-        MapZoom _zoom;
+        ScrollViewer owner;
+        Size viewPortSize;
+        bool canHScroll;
+        bool canVScroll;
+        QuadTree<IVirtualChild> index;
+        ObservableCollection<IVirtualChild> children;
+        Size smallScrollIncrement = new Size(10, 10);
+
+        readonly Canvas content;
+
+        readonly Border backdrop;
+
+        readonly TranslateTransform translate;
+
+        readonly ScaleTransform scale;
+        Size extent;
+
+        readonly IList<Rect> dirtyRegions = new List<Rect>();
+
+        readonly IList<Rect> visibleRegions = new List<Rect>();
+        IDictionary<IVirtualChild, int> visualPositions;
+        int nodeCollectCycle;
+        bool done = true;
+        MapZoom zoom;
 
         public static DependencyProperty VirtualChildProperty = DependencyProperty.Register("VirtualChild", typeof(IVirtualChild), typeof(VirtualCanvas));
 
         public event EventHandler<VisualChangeEventArgs> VisualsChanged;
-
-        delegate void UpdateHandler();
 
         /// <summary>
         /// Construct empty virtual canvas.
         /// </summary>
         public VirtualCanvas()
         {
-            this._index = new QuadTree<IVirtualChild>();
-            this._children = new ObservableCollection<IVirtualChild>();
-            this._children.CollectionChanged += new System.Collections.Specialized.NotifyCollectionChangedEventHandler(this.OnChildrenCollectionChanged);
-            this._content = new Canvas();
-            this._backdrop = new Border();
-            this._content.Children.Add(this._backdrop);
+            this.index = new QuadTree<IVirtualChild>();
+            this.children = new ObservableCollection<IVirtualChild>();
+            this.children.CollectionChanged += this.OnChildrenCollectionChanged;
+            this.content = new Canvas();
+            this.backdrop = new Border();
+            this.content.Children.Add(this.backdrop);
 
-            TransformGroup g = new TransformGroup();
-            this._scale = new ScaleTransform();
-            this._translate = new TranslateTransform();
-            g.Children.Add(this._scale);
-            g.Children.Add(this._translate);
-            this._content.RenderTransform = g;
+            var g = new TransformGroup();
+            this.scale = new ScaleTransform();
+            this.translate = new TranslateTransform();
+            g.Children.Add(this.scale);
+            g.Children.Add(this.translate);
+            this.content.RenderTransform = g;
 
-            this._translate.Changed += new EventHandler(this.OnTranslateChanged);
-            this._scale.Changed += new EventHandler(this.OnScaleChanged);
-            this.Children.Add(this._content);
+            this.translate.Changed += this.OnTranslateChanged;
+            this.scale.Changed += this.OnScaleChanged;
+            this.Children.Add(this.content);
         }
 
         /// <summary>
@@ -134,8 +138,8 @@ namespace Autobot.WpfClient
         /// </summary>
         internal MapZoom Zoom
         {
-            get { return this._zoom; }
-            set { this._zoom = value; }
+            get { return this.zoom; }
+            set { this.zoom = value; }
         }
 
         /// <summary>
@@ -144,7 +148,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public bool IsDone
         {
-            get { return this._done; }
+            get { return this.done; }
         }
 
         /// <summary>
@@ -153,11 +157,11 @@ namespace Autobot.WpfClient
         private void RebuildVisuals()
         {
             // need to rebuild the index.
-            this._index = null;
-            this._visualPositions = null;
-            this._visible = Rect.Empty;
-            this._done = false;
-            foreach (UIElement e in this._content.Children)
+            this.index = null;
+            this.visualPositions = null;
+            this.visible = Rect.Empty;
+            this.done = false;
+            foreach (UIElement e in this.content.Children)
             {
                 IVirtualChild n = e.GetValue(VirtualChildProperty) as IVirtualChild;
                 if (n != null)
@@ -166,8 +170,8 @@ namespace Autobot.WpfClient
                     n.DisposeVisual();
                 }
             }
-            this._content.Children.Clear();
-            this._content.Children.Add(this._backdrop);
+            this.content.Children.Clear();
+            this.content.Children.Add(this.backdrop);
             this.InvalidateArrange();
             this.StartLazyUpdate();
         }
@@ -177,7 +181,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public ScaleTransform Scale
         {
-            get { return this._scale; }
+            get { return this.scale; }
         }
 
         /// <summary>
@@ -185,7 +189,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public TranslateTransform Translate
         {
-            get { return this._translate; }
+            get { return this.translate; }
         }
 
         /// <summary>
@@ -194,19 +198,19 @@ namespace Autobot.WpfClient
         /// </summary>
         public ObservableCollection<IVirtualChild> VirtualChildren
         {
-            get { return this._children; }
+            get { return this.children; }
             set
             {
                 if (value == null)
                 {
                     throw new ArgumentNullException("value");
                 }
-                if (this._children != null)
+                if (this.children != null)
                 {
-                    this._children.CollectionChanged -= new System.Collections.Specialized.NotifyCollectionChangedEventHandler(this.OnChildrenCollectionChanged);
+                    this.children.CollectionChanged -= this.OnChildrenCollectionChanged;
                 }
-                this._children = value;
-                this._children.CollectionChanged += new System.Collections.Specialized.NotifyCollectionChangedEventHandler(this.OnChildrenCollectionChanged);
+                this.children = value;
+                this.children.CollectionChanged += this.OnChildrenCollectionChanged;
                 this.RebuildVisuals();
             }
         }
@@ -216,18 +220,17 @@ namespace Autobot.WpfClient
         /// </summary>
         public Size SmallScrollIncrement
         {
-            get { return this._smallScrollIncrement; }
-            set { this._smallScrollIncrement = value; }
+            get { return this.smallScrollIncrement; }
+            set { this.smallScrollIncrement = value; }
         }
 
         /// <summary>
         /// Add a new IVirtualChild.  The VirtualCanvas will call CreateVisual on them
         /// when the Bounds of your child intersects the current visible view port.
         /// </summary>
-        /// <param name="c"></param>
         public void AddVirtualChild(IVirtualChild child)
         {
-            this._children.Add(child);
+            this.children.Add(child);
         }
 
         /// <summary>
@@ -237,9 +240,9 @@ namespace Autobot.WpfClient
         /// <returns>The list of virtual children found or null if there are none</returns>
         public IEnumerable<IVirtualChild> GetChildrenIntersecting(Rect bounds)
         {
-            if (this._index != null)
+            if (this.index != null)
             {
-                return this._index.GetNodesInside(bounds);
+                return this.index.GetNodesInside(bounds);
             }
             return null;
         }
@@ -251,9 +254,9 @@ namespace Autobot.WpfClient
         /// <returns>True if a node is found whose bounds intersect the given bounds</returns>
         public bool HasChildrenIntersecting(Rect bounds)
         {
-            if (this._index != null)
+            if (this.index != null)
             {
-                return this._index.HasNodesInside(bounds);
+                return this.index.HasNodesInside(bounds);
             }
             return false;
         }
@@ -263,7 +266,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public int LiveVisualCount
         {
-            get { return this._content.Children.Count - 1; }
+            get { return this.content.Children.Count - 1; }
         }
 
         /// <summary>
@@ -291,7 +294,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public Canvas ContentCanvas
         {
-            get { return this._content; }
+            get { return this.content; }
         }
 
         /// <summary>
@@ -300,7 +303,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public Border Backdrop
         {
-            get { return this._backdrop; }
+            get { return this.backdrop; }
         }
 
         /// <summary>
@@ -309,20 +312,24 @@ namespace Autobot.WpfClient
         void CalculateExtent()
         {
             bool rebuild = false;
-            if (this._index == null || this._extent.Width == 0 || this._extent.Height == 0 ||
-                double.IsNaN(this._extent.Width) || double.IsNaN(this._extent.Height))
+            // ReSharper disable CompareOfFloatsByEqualityOperator
+            if (this.index == null || this.extent.Width == 0 || this.extent.Height == 0 ||
+                // ReSharper restore CompareOfFloatsByEqualityOperator
+                double.IsNaN(this.extent.Width) || double.IsNaN(this.extent.Height))
             {
                 rebuild = true;
                 bool first = true;
-                Rect extent = new Rect();
-                this._visualPositions = new Dictionary<IVirtualChild, int>();
-                int index = 0;
-                foreach (IVirtualChild c in this._children)
+                var extentRect = new Rect();
+                this.visualPositions = new Dictionary<IVirtualChild, int>();
+                int i = 0;
+                foreach (IVirtualChild c in this.children)
                 {
-                    this._visualPositions[c] = index++;
+                    this.visualPositions[c] = i++;
 
                     Rect childBounds = c.Bounds;
+                    // ReSharper disable CompareOfFloatsByEqualityOperator
                     if (childBounds.Width != 0 && childBounds.Height != 0)
+                        // ReSharper restore CompareOfFloatsByEqualityOperator
                     {
                         if (double.IsNaN(childBounds.Width) || double.IsNaN(childBounds.Height))
                         {
@@ -331,48 +338,48 @@ namespace Autobot.WpfClient
                         }
                         if (first)
                         {
-                            extent = childBounds;
+                            extentRect = childBounds;
                             first = false;
                         }
                         else
                         {
-                            extent = Rect.Union(extent, childBounds);
+                            extentRect = Rect.Union(extentRect, childBounds);
                         }
                     }
                 }
-                this._extent = extent.Size;
+                this.extent = extentRect.Size;
                 // Ok, now we know the size we can create the index.
-                this._index = new QuadTree<IVirtualChild>();
-                this._index.Bounds = new Rect(0, 0, extent.Width, extent.Height);
-                foreach (IVirtualChild n in this._children)
+                this.index = new QuadTree<IVirtualChild>();
+                this.index.Bounds = new Rect(0, 0, extentRect.Width, extentRect.Height);
+                foreach (IVirtualChild n in this.children)
                 {
                     if (n.Bounds.Width > 0 && n.Bounds.Height > 0)
                     {
-                        this._index.Insert(n, n.Bounds);
+                        this.index.Insert(n, n.Bounds);
                     }
                 }
             }
 
             // Make sure we honor the min width & height.
-            double w = Math.Max(this._content.MinWidth, this._extent.Width);
-            double h = Math.Max(this._content.MinHeight, this._extent.Height);
-            this._content.Width = w;
-            this._content.Height = h;
+            double w = Math.Max(this.content.MinWidth, this.extent.Width);
+            double h = Math.Max(this.content.MinHeight, this.extent.Height);
+            this.content.Width = w;
+            this.content.Height = h;
 
             // Make sure the backdrop covers the ViewPort bounds.
-            double zoom = this._scale.ScaleX;
+            double scaleX = this.scale.ScaleX;
             if (!double.IsInfinity(this.ViewportHeight) &&
                 !double.IsInfinity(this.ViewportHeight))
             {
-                w = Math.Max(w, this.ViewportWidth / zoom);
-                h = Math.Max(h, this.ViewportHeight / zoom);
-                this._backdrop.Width = w;
-                this._backdrop.Height = h;
+                w = Math.Max(w, this.ViewportWidth / scaleX);
+                h = Math.Max(h, this.ViewportHeight / scaleX);
+                this.backdrop.Width = w;
+                this.backdrop.Height = h;
             }
 
-            if (this._owner != null)
+            if (this.owner != null)
             {
-                this._owner.InvalidateScrollInfo();
+                this.owner.InvalidateScrollInfo();
             }
 
             if (rebuild)
@@ -393,14 +400,14 @@ namespace Autobot.WpfClient
             // We will be given the visible size in the scroll viewer here.
             this.CalculateExtent();
 
-            if (availableSize != this._viewPortSize)
+            if (availableSize != this.viewPortSize)
             {
                 this.SetViewportSize(availableSize);
             }
 
             foreach (UIElement child in this.InternalChildren)
             {
-                IVirtualChild n = child.GetValue(VirtualChildProperty) as IVirtualChild;
+                var n = child.GetValue(VirtualChildProperty) as IVirtualChild;
                 if (n != null)
                 {
                     Rect bounds = n.Bounds;
@@ -409,12 +416,10 @@ namespace Autobot.WpfClient
             }
             if (double.IsInfinity(availableSize.Width))
             {
-                return this._extent;
+                return this.extent;
             }
-            else
-            {
-                return availableSize;
-            }
+
+            return availableSize;
         }
 
         /// <summary>
@@ -428,14 +433,14 @@ namespace Autobot.WpfClient
 
             this.CalculateExtent();
 
-            if (finalSize != this._viewPortSize)
+            if (finalSize != this.viewPortSize)
             {
                 this.SetViewportSize(finalSize);
             }
 
-            this._content.Arrange(new Rect(0, 0, this._content.Width, this._content.Height));
+            this.content.Arrange(new Rect(0, 0, this.content.Width, this.content.Height));
 
-            if (this._index == null)
+            if (this.index == null)
             {
                 this.StartLazyUpdate();
             }
@@ -443,19 +448,19 @@ namespace Autobot.WpfClient
             return finalSize;
         }
 
-        DispatcherTimer _timer;
+        DispatcherTimer timer;
 
         /// <summary>
         /// Begin a timer for lazily creating IVirtualChildren visuals
         /// </summary>
         void StartLazyUpdate()
         {
-            if (this._timer == null)
+            if (this.timer == null)
             {
-                this._timer = new DispatcherTimer(TimeSpan.FromMilliseconds(10), DispatcherPriority.Normal,
-                    new EventHandler(this.OnStartLazyUpdate), this.Dispatcher);
+                this.timer = new DispatcherTimer(TimeSpan.FromMilliseconds(10), DispatcherPriority.Normal,
+                    this.OnStartLazyUpdate, this.Dispatcher);
             }
-            this._timer.Start();
+            this.timer.Start();
         }
 
         /// <summary>
@@ -465,7 +470,7 @@ namespace Autobot.WpfClient
         /// <param name="args">noop</param>
         void OnStartLazyUpdate(object sender, EventArgs args)
         {
-            this._timer.Stop();
+            this.timer.Stop();
             this.LazyUpdateVisuals();
         }
 
@@ -475,20 +480,22 @@ namespace Autobot.WpfClient
         /// <param name="s">The new size</param>
         void SetViewportSize(Size s)
         {
-            if (s != this._viewPortSize)
+            if (s != this.viewPortSize)
             {
-                this._viewPortSize = s;
+                this.viewPortSize = s;
                 this.OnScrollChanged();
             }
         }
 
-        int _createQuanta = 1000;
-        int _removeQuanta = 2000;
-        int _gcQuanta = 5000;
-        int _idealDuration = 50; // 50 milliseconds.
-        int _added;
-        int _removed;
-        Rect _visible = Rect.Empty;
+        int createQuanta = 1000;
+        int removeQuanta = 2000;
+        int gcQuanta = 5000;
+
+        private const int IdealDuration = 50; // 50 milliseconds.
+
+        int added;
+        int removed;
+        Rect visible = Rect.Empty;
         delegate int QuantizedWorkHandler(int quantum);
 
         /// <summary>
@@ -497,28 +504,28 @@ namespace Autobot.WpfClient
         /// </summary>
         void LazyUpdateVisuals()
         {
-            if (this._index == null)
+            if (this.index == null)
             {
                 this.CalculateExtent();
             }
 
-            this._done = true;
-            this._added = 0;
-            this._removed = 0;
+            this.done = true;
+            this.added = 0;
+            this.removed = 0;
 
-            this._createQuanta = SelfThrottlingWorker(this._createQuanta, this._idealDuration, new QuantizedWorkHandler(this.LazyCreateNodes));
-            this._removeQuanta = SelfThrottlingWorker(this._removeQuanta, this._idealDuration, new QuantizedWorkHandler(this.LazyRemoveNodes));
-            this._gcQuanta = SelfThrottlingWorker(this._gcQuanta, this._idealDuration, new QuantizedWorkHandler(this.LazyGarbageCollectNodes));
+            this.createQuanta = SelfThrottlingWorker(this.createQuanta, IdealDuration, this.LazyCreateNodes);
+            this.removeQuanta = SelfThrottlingWorker(this.removeQuanta, IdealDuration, this.LazyRemoveNodes);
+            this.gcQuanta = SelfThrottlingWorker(this.gcQuanta, IdealDuration, this.LazyGarbageCollectNodes);
 
             if (VisualsChanged != null)
             {
-                VisualsChanged(this, new VisualChangeEventArgs(_added, _removed));
+                VisualsChanged(this, new VisualChangeEventArgs(this.added, this.removed));
             }
-            if (this._added > 0)
+            if (this.added > 0)
             {
                 this.InvalidateArrange();
             }
-            if (!this._done)
+            if (!this.done)
             {
                 this.StartLazyUpdate();
                 //this.Dispatcher.BeginInvoke(DispatcherPriority.Background, new UpdateHandler(LazyUpdateVisuals));
@@ -560,28 +567,28 @@ namespace Autobot.WpfClient
         private int LazyCreateNodes(int quantum)
         {
 
-            if (this._visible == Rect.Empty)
+            if (this.visible == Rect.Empty)
             {
-                this._visible = this.GetVisibleRect();
-                this._visibleRegions.Add(this._visible);
-                this._done = false;
+                this.visible = this.GetVisibleRect();
+                this.visibleRegions.Add(this.visible);
+                this.done = false;
             }
 
             int count = 0;
             int regionCount = 0;
-            while (this._visibleRegions.Count > 0 && count < quantum)
+            while (this.visibleRegions.Count > 0 && count < quantum)
             {
-                Rect r = this._visibleRegions[0];
-                this._visibleRegions.RemoveAt(0);
+                Rect r = this.visibleRegions[0];
+                this.visibleRegions.RemoveAt(0);
                 regionCount++;
 
                 // Iterate over the visible range of nodes and make sure they have visuals.
-                foreach (IVirtualChild n in this._index.GetNodesInside(r))
+                foreach (IVirtualChild n in this.index.GetNodesInside(r))
                 {
                     if (n.Visual == null)
                     {
                         this.EnsureVisual(n);
-                        this._added++;
+                        this.added++;
                     }
 
                     count++;
@@ -592,13 +599,13 @@ namespace Autobot.WpfClient
                         if (regionCount == 1)
                         {
                             // We didn't even complete 1 region, so we better split it.
-                            this.SplitRegion(r, this._visibleRegions);
+                            this.SplitRegion(r, this.visibleRegions);
                         }
                         else
                         {
-                            this._visibleRegions.Add(r); // put it back since we're not done!
+                            this.visibleRegions.Add(r); // put it back since we're not done!
                         }
-                        this._done = false;
+                        this.done = false;
                         break;
                     }
                 }
@@ -638,22 +645,22 @@ namespace Autobot.WpfClient
             Canvas.SetTop(e, bounds.Top);
 
             // Get the correct absolute position of this child.
-            int position = this._visualPositions[child];
+            int position = this.visualPositions[child];
 
             // Now do a binary search for the correct insertion position based
             // on the visual positions of the existing visible children.
-            UIElementCollection c = this._content.Children;
+            UIElementCollection c = this.content.Children;
             int min = 0;
             int max = c.Count - 1;
             while (max > min + 1)
             {
                 int i = (min + max) / 2;
-                UIElement v = this._content.Children[i];
+                UIElement v = this.content.Children[i];
                 IVirtualChild n = v.GetValue(VirtualChildProperty) as IVirtualChild;
                 if (n != null)
                 {
-                    int index = this._visualPositions[n];
-                    if (index > position)
+                    int visualPosition = this.visualPositions[n];
+                    if (visualPosition > position)
                     {
                         // search from min to i.
                         max = i;
@@ -677,9 +684,8 @@ namespace Autobot.WpfClient
             if (max == c.Count - 1)
             {
                 UIElement v = c[max];
-                IVirtualChild maxchild = v.GetValue(VirtualChildProperty) as IVirtualChild;
-                int maxpos = position;
-                if (maxchild == null || position > this._visualPositions[maxchild])
+                var maxchild = v.GetValue(VirtualChildProperty) as IVirtualChild;
+                if (maxchild == null || position > this.visualPositions[maxchild])
                 {
                     // Then we have a new last child!
                     max++;
@@ -727,31 +733,31 @@ namespace Autobot.WpfClient
         /// <returns>Amount of work we did</returns>
         private int LazyRemoveNodes(int quantum)
         {
-            Rect visible = this.GetVisibleRect();
+            Rect visibleRect = this.GetVisibleRect();
             int count = 0;
 
             // Also remove nodes that are no longer visible.
             int regionCount = 0;
-            while (this._dirtyRegions.Count > 0 && count < quantum)
+            while (this.dirtyRegions.Count > 0 && count < quantum)
             {
-                int last = this._dirtyRegions.Count - 1;
-                Rect dirty = this._dirtyRegions[last];
-                this._dirtyRegions.RemoveAt(last);
+                int last = this.dirtyRegions.Count - 1;
+                Rect dirty = this.dirtyRegions[last];
+                this.dirtyRegions.RemoveAt(last);
                 regionCount++;
 
                 // Iterate over the visible range of nodes and make sure they have visuals.
-                foreach (IVirtualChild n in this._index.GetNodesInside(dirty))
+                foreach (IVirtualChild n in this.index.GetNodesInside(dirty))
                 {
                     UIElement e = n.Visual;
                     if (e != null)
                     {
                         Rect nrect = n.Bounds;
-                        if (!nrect.IntersectsWith(visible))
+                        if (!nrect.IntersectsWith(visibleRect))
                         {
                             e.ClearValue(VirtualChildProperty);
-                            this._content.Children.Remove(e);
+                            this.content.Children.Remove(e);
                             n.DisposeVisual();
-                            this._removed++;
+                            this.removed++;
                         }
                     }
 
@@ -761,13 +767,13 @@ namespace Autobot.WpfClient
                         if (regionCount == 1)
                         {
                             // We didn't even complete 1 region, so we better split it.
-                            this.SplitRegion(dirty, this._dirtyRegions);
+                            this.SplitRegion(dirty, this.dirtyRegions);
                         }
                         else
                         {
-                            this._dirtyRegions.Add(dirty); // put it back since we're not done!
+                            this.dirtyRegions.Add(dirty); // put it back since we're not done!
                         }
-                        this._done = false;
+                        this.done = false;
                         break;
                     }
                 }
@@ -786,28 +792,28 @@ namespace Autobot.WpfClient
             int count = 0;
             // Now after every update also do a full incremental scan over all the children
             // to make sure we didn't leak any nodes that need to be removed.
-            while (count < quantum && this._nodeCollectCycle < this._content.Children.Count)
+            while (count < quantum && this.nodeCollectCycle < this.content.Children.Count)
             {
-                UIElement e = this._content.Children[this._nodeCollectCycle++];
+                UIElement e = this.content.Children[this.nodeCollectCycle++];
                 IVirtualChild n = e.GetValue(VirtualChildProperty) as IVirtualChild;
                 if (n != null)
                 {
                     Rect nrect = n.Bounds;
-                    if (!nrect.IntersectsWith(this._visible))
+                    if (!nrect.IntersectsWith(this.visible))
                     {
                         e.ClearValue(VirtualChildProperty);
-                        this._content.Children.Remove(e);
+                        this.content.Children.Remove(e);
                         n.DisposeVisual();
-                        this._removed++;
+                        this.removed++;
                     }
                     count++;
                 }
-                this._nodeCollectCycle++;
+                this.nodeCollectCycle++;
             }
 
-            if (this._nodeCollectCycle < this._content.Children.Count)
+            if (this.nodeCollectCycle < this.content.Children.Count)
             {
-                this._done = false;
+                this.done = false;
             }
 
             return count;
@@ -818,7 +824,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public Size Extent
         {
-            get { return this._extent; }
+            get { return this.extent; }
         }
 
         #region IScrollInfo Members
@@ -828,8 +834,8 @@ namespace Autobot.WpfClient
         /// </summary>
         public bool CanHorizontallyScroll
         {
-            get { return this._canHScroll; }
-            set { this._canHScroll = value; }
+            get { return this.canHScroll; }
+            set { this.canHScroll = value; }
         }
 
         /// <summary>
@@ -837,8 +843,8 @@ namespace Autobot.WpfClient
         /// </summary>
         public bool CanVerticallyScroll
         {
-            get { return this._canVScroll; }
-            set { this._canVScroll = value; }
+            get { return this.canVScroll; }
+            set { this.canVScroll = value; }
         }
 
         /// <summary>
@@ -846,7 +852,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public double ExtentHeight
         {
-            get { return this._extent.Height * this._scale.ScaleY; }
+            get { return this.extent.Height * this.scale.ScaleY; }
         }
 
         /// <summary>
@@ -854,7 +860,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public double ExtentWidth
         {
-            get { return this._extent.Width * this._scale.ScaleX; }
+            get { return this.extent.Width * this.scale.ScaleX; }
         }
 
         /// <summary>
@@ -862,7 +868,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public void LineDown()
         {
-            this.SetVerticalOffset(this.VerticalOffset + (this._smallScrollIncrement.Height * this._scale.ScaleX));
+            this.SetVerticalOffset(this.VerticalOffset + (this.smallScrollIncrement.Height * this.scale.ScaleX));
         }
 
         /// <summary>
@@ -870,7 +876,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public void LineLeft()
         {
-            this.SetHorizontalOffset(this.HorizontalOffset - (this._smallScrollIncrement.Width * this._scale.ScaleX));
+            this.SetHorizontalOffset(this.HorizontalOffset - (this.smallScrollIncrement.Width * this.scale.ScaleX));
         }
 
         /// <summary>
@@ -878,7 +884,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public void LineRight()
         {
-            this.SetHorizontalOffset(this.HorizontalOffset + (this._smallScrollIncrement.Width * this._scale.ScaleX));
+            this.SetHorizontalOffset(this.HorizontalOffset + (this.smallScrollIncrement.Width * this.scale.ScaleX));
         }
 
         /// <summary>
@@ -886,7 +892,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public void LineUp()
         {
-            this.SetVerticalOffset(this.VerticalOffset - (this._smallScrollIncrement.Height * this._scale.ScaleX));
+            this.SetVerticalOffset(this.VerticalOffset - (this.smallScrollIncrement.Height * this.scale.ScaleX));
         }
 
         /// <summary>
@@ -895,11 +901,11 @@ namespace Autobot.WpfClient
         /// <param name="visual">The visual that will become visible</param>
         /// <param name="rectangle">The bounds of that visual</param>
         /// <returns>The bounds that is actually visible.</returns>
-        public Rect MakeVisible(System.Windows.Media.Visual visual, Rect rectangle)
+        public Rect MakeVisible(Visual visual, Rect rectangle)
         {
-            if (this._zoom != null && visual != this)
+            if (this.zoom != null && visual != this)
             {
-                return this._zoom.ScrollIntoView(visual as FrameworkElement);
+                return this.zoom.ScrollIntoView(visual as FrameworkElement);
             }
             return rectangle;
         }
@@ -909,7 +915,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public void MouseWheelDown()
         {
-            this.SetVerticalOffset(this.VerticalOffset + (this._smallScrollIncrement.Height * this._scale.ScaleX));
+            this.SetVerticalOffset(this.VerticalOffset + (this.smallScrollIncrement.Height * this.scale.ScaleX));
         }
 
         /// <summary>
@@ -917,7 +923,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public void MouseWheelLeft()
         {
-            this.SetHorizontalOffset(this.HorizontalOffset + (this._smallScrollIncrement.Width * this._scale.ScaleX));
+            this.SetHorizontalOffset(this.HorizontalOffset + (this.smallScrollIncrement.Width * this.scale.ScaleX));
         }
 
         /// <summary>
@@ -925,7 +931,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public void MouseWheelRight()
         {
-            this.SetHorizontalOffset(this.HorizontalOffset - (this._smallScrollIncrement.Width * this._scale.ScaleX));
+            this.SetHorizontalOffset(this.HorizontalOffset - (this.smallScrollIncrement.Width * this.scale.ScaleX));
         }
 
         /// <summary>
@@ -933,7 +939,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public void MouseWheelUp()
         {
-            this.SetVerticalOffset(this.VerticalOffset - (this._smallScrollIncrement.Height * this._scale.ScaleX));
+            this.SetVerticalOffset(this.VerticalOffset - (this.smallScrollIncrement.Height * this.scale.ScaleX));
         }
 
         /// <summary>
@@ -941,7 +947,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public void PageDown()
         {
-            this.SetVerticalOffset(this.VerticalOffset + this._viewPortSize.Height);
+            this.SetVerticalOffset(this.VerticalOffset + this.viewPortSize.Height);
         }
 
         /// <summary>
@@ -949,7 +955,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public void PageLeft()
         {
-            this.SetHorizontalOffset(this.HorizontalOffset - this._viewPortSize.Width);
+            this.SetHorizontalOffset(this.HorizontalOffset - this.viewPortSize.Width);
         }
 
         /// <summary>
@@ -957,7 +963,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public void PageRight()
         {
-            this.SetHorizontalOffset(this.HorizontalOffset + this._viewPortSize.Width);
+            this.SetHorizontalOffset(this.HorizontalOffset + this.viewPortSize.Width);
         }
 
         /// <summary>
@@ -965,7 +971,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public void PageUp()
         {
-            this.SetVerticalOffset(this.VerticalOffset - this._viewPortSize.Height);
+            this.SetVerticalOffset(this.VerticalOffset - this.viewPortSize.Height);
         }
 
         /// <summary>
@@ -973,8 +979,8 @@ namespace Autobot.WpfClient
         /// </summary>
         public ScrollViewer ScrollOwner
         {
-            get { return this._owner; }
-            set { this._owner = value; }
+            get { return this.owner; }
+            set { this.owner = value; }
         }
 
         /// <summary>
@@ -984,7 +990,7 @@ namespace Autobot.WpfClient
         public void SetHorizontalOffset(double offset)
         {
             double xoffset = Math.Max(Math.Min(offset, this.ExtentWidth - this.ViewportWidth), 0);
-            this._translate.X = -xoffset;
+            this.translate.X = -xoffset;
             this.OnScrollChanged();
         }
 
@@ -995,7 +1001,7 @@ namespace Autobot.WpfClient
         public void SetVerticalOffset(double offset)
         {
             double yoffset = Math.Max(Math.Min(offset, this.ExtentHeight - this.ViewportHeight), 0);
-            this._translate.Y = -yoffset;
+            this.translate.Y = -yoffset;
             this.OnScrollChanged();
         }
 
@@ -1004,7 +1010,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public double HorizontalOffset
         {
-            get { return -this._translate.X; }
+            get { return -this.translate.X; }
         }
 
         /// <summary>
@@ -1012,7 +1018,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public double VerticalOffset
         {
-            get { return -this._translate.Y; }
+            get { return -this.translate.Y; }
         }
 
         /// <summary>
@@ -1020,7 +1026,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public double ViewportHeight
         {
-            get { return this._viewPortSize.Height; }
+            get { return this.viewPortSize.Height; }
         }
 
         /// <summary>
@@ -1028,7 +1034,7 @@ namespace Autobot.WpfClient
         /// </summary>
         public double ViewportWidth
         {
-            get { return this._viewPortSize.Width; }
+            get { return this.viewPortSize.Width; }
         }
 
         #endregion
@@ -1041,10 +1047,10 @@ namespace Autobot.WpfClient
         Rect GetVisibleRect()
         {
             // Add a bit of extra around the edges so we are sure to create nodes that have a tiny bit showing.
-            double xstart = (this.HorizontalOffset - this._smallScrollIncrement.Width) / this._scale.ScaleX;
-            double ystart = (this.VerticalOffset - this._smallScrollIncrement.Height) / this._scale.ScaleY;
-            double xend = (this.HorizontalOffset + (this._viewPortSize.Width + (2 * this._smallScrollIncrement.Width))) / this._scale.ScaleX;
-            double yend = (this.VerticalOffset + (this._viewPortSize.Height + (2 * this._smallScrollIncrement.Height))) / this._scale.ScaleY;
+            double xstart = (this.HorizontalOffset - this.smallScrollIncrement.Width) / this.scale.ScaleX;
+            double ystart = (this.VerticalOffset - this.smallScrollIncrement.Height) / this.scale.ScaleY;
+            double xend = (this.HorizontalOffset + (this.viewPortSize.Width + (2 * this.smallScrollIncrement.Width))) / this.scale.ScaleX;
+            double yend = (this.VerticalOffset + (this.viewPortSize.Height + (2 * this.smallScrollIncrement.Height))) / this.scale.ScaleY;
             return new Rect(xstart, ystart, xend - xstart, yend - ystart);
         }
 
@@ -1054,37 +1060,37 @@ namespace Autobot.WpfClient
         /// </summary>
         void OnScrollChanged()
         {
-            Rect dirty = this._visible;
+            Rect dirty = this.visible;
             this.AddVisibleRegion();
-            this._nodeCollectCycle = 0;
-            this._done = false;
+            this.nodeCollectCycle = 0;
+            this.done = false;
 
-            Rect intersection = Rect.Intersect(dirty, this._visible);
+            Rect intersection = Rect.Intersect(dirty, this.visible);
             if (intersection == Rect.Empty)
             {
-                this._dirtyRegions.Add(dirty); // the whole thing is dirty
+                this.dirtyRegions.Add(dirty); // the whole thing is dirty
             }
             else
             {
                 // Add left stripe
                 if (dirty.Left < intersection.Left)
                 {
-                    this._dirtyRegions.Add(new Rect(dirty.Left, dirty.Top, intersection.Left - dirty.Left, dirty.Height));
+                    this.dirtyRegions.Add(new Rect(dirty.Left, dirty.Top, intersection.Left - dirty.Left, dirty.Height));
                 }
                 // Add right stripe
                 if (dirty.Right > intersection.Right)
                 {
-                    this._dirtyRegions.Add(new Rect(intersection.Right, dirty.Top, dirty.Right - intersection.Right, dirty.Height));
+                    this.dirtyRegions.Add(new Rect(intersection.Right, dirty.Top, dirty.Right - intersection.Right, dirty.Height));
                 }
                 // Add top stripe
                 if (dirty.Top < intersection.Top)
                 {
-                    this._dirtyRegions.Add(new Rect(dirty.Left, dirty.Top, dirty.Width, intersection.Top - dirty.Top));
+                    this.dirtyRegions.Add(new Rect(dirty.Left, dirty.Top, dirty.Width, intersection.Top - dirty.Top));
                 }
                 // Add right stripe
                 if (dirty.Bottom > intersection.Bottom)
                 {
-                    this._dirtyRegions.Add(new Rect(dirty.Left, intersection.Bottom, dirty.Width, dirty.Bottom - intersection.Bottom));
+                    this.dirtyRegions.Add(new Rect(dirty.Left, intersection.Bottom, dirty.Width, dirty.Bottom - intersection.Bottom));
                 }
             }
 
@@ -1097,9 +1103,9 @@ namespace Autobot.WpfClient
         /// </summary>
         public void InvalidateScrollInfo()
         {
-            if (this._owner != null)
+            if (this.owner != null)
             {
-                this._owner.InvalidateScrollInfo();
+                this.owner.InvalidateScrollInfo();
             }
         }
 
@@ -1108,9 +1114,9 @@ namespace Autobot.WpfClient
         /// </summary>
         private void AddVisibleRegion()
         {
-            this._visible = this.GetVisibleRect();
-            this._visibleRegions.Clear();
-            this._visibleRegions.Add(this._visible);
+            this.visible = this.GetVisibleRect();
+            this.visibleRegions.Clear();
+            this.visibleRegions.Add(this.visible);
         }
     }
 }

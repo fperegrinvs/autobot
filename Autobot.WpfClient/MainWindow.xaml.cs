@@ -1,9 +1,4 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="Window1.xaml.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -23,9 +18,7 @@ namespace Autobot.WpfClient
     using MjpegProcessor;
 
     /// <summary>
-    /// This demo shows the VirtualCanvas managing up to 50,000 random WPF shapes providing smooth scrolling and
-    /// zooming while creating those shapes on the fly.  This helps make a WPF canvas that is a lot more
-    /// scalable.
+    /// Autobot Cliente Main Window
     /// </summary>
     public partial class MainWindow
     {
@@ -83,7 +76,7 @@ namespace Autobot.WpfClient
             var singleAngle = 360 / distances.Length;
             for (var i = 0; i < distances.Length; i++)
             {
-                shape.Sensor.Add(new SenseData()
+                shape.Sensor.Add(new SenseData
                                  {
                                       Angle = singleAngle * i,
                                       Distance = distances[i]
@@ -122,13 +115,13 @@ namespace Autobot.WpfClient
                     removedPerSecond += e.Removed;
                     if (tick > lastTick + 100)
                     {
-                        Created.BeginAnimation(Rectangle.WidthProperty, new DoubleAnimation(
+                        Created.BeginAnimation(WidthProperty, new DoubleAnimation(
                             Math.Min(addedPerSecond, 450),
                             new Duration(TimeSpan.FromMilliseconds(100))));
                         CreatedLabel.Text = addedPerSecond.ToString(CultureInfo.InvariantCulture) + " created";
                         addedPerSecond = 0;
 
-                        Destroyed.BeginAnimation(Rectangle.WidthProperty, new DoubleAnimation(
+                        Destroyed.BeginAnimation(WidthProperty, new DoubleAnimation(
                             Math.Min(removedPerSecond, 450),
                             new Duration(TimeSpan.FromMilliseconds(100))));
                         DestroyedLabel.Text = removedPerSecond.ToString(CultureInfo.InvariantCulture) + " disposed";
@@ -148,17 +141,17 @@ namespace Autobot.WpfClient
             this.animateStatus = item.IsChecked = !item.IsChecked;
 
             StatusText.Text = "";
-            Created.BeginAnimation(Rectangle.WidthProperty, null);
+            Created.BeginAnimation(WidthProperty, null);
             Created.Width = 0;
             CreatedLabel.Text = "";
-            Destroyed.BeginAnimation(Rectangle.WidthProperty, null);
+            Destroyed.BeginAnimation(WidthProperty, null);
             Destroyed.Width = 0;
             DestroyedLabel.Text = "";
         }
 
         void OnShowGridLines(object sender, RoutedEventArgs e)
         {
-            MenuItem item = (MenuItem)sender;
+            var item = (MenuItem)sender;
             this.ShowGridLines = item.IsChecked = !item.IsChecked;
         }
 
@@ -182,26 +175,26 @@ namespace Autobot.WpfClient
                     gridCell.Margin = new Thickness(TileMargin);
                     gridCell.Stroke = Brushes.Blue;
                     gridCell.StrokeThickness = 0.1;
-                    gridCell.Points = new PointCollection(new Point[] { new Point(0, height-0.1),
+                    gridCell.Points = new PointCollection(new[] { new Point(0, height-0.1),
                         new Point(width-0.1, height-0.1), new Point(width-0.1, 0) });
-                    VisualBrush gridLines = new VisualBrush(gridCell);
+                    var gridLines = new VisualBrush(gridCell);
                     gridLines.TileMode = TileMode.Tile;
                     gridLines.Viewport = new Rect(0, 0, 1.0 / numTileToAccumulate, 1.0 / numTileToAccumulate);
                     gridLines.AlignmentX = AlignmentX.Center;
                     gridLines.AlignmentY = AlignmentY.Center;
 
-                    VisualBrush outerVB = new VisualBrush();
-                    Rectangle outerRect = new Rectangle();
+                    var outerVb = new VisualBrush();
+                    var outerRect = new Rectangle();
                     outerRect.Width = 10.0;  //can be any size
                     outerRect.Height = 10.0;
                     outerRect.Fill = gridLines;
-                    outerVB.Visual = outerRect;
-                    outerVB.Viewport = new Rect(0, 0,
+                    outerVb.Visual = outerRect;
+                    outerVb.Viewport = new Rect(0, 0,
                         width * numTileToAccumulate, height * numTileToAccumulate);
-                    outerVB.ViewportUnits = BrushMappingMode.Absolute;
-                    outerVB.TileMode = TileMode.Tile;
+                    outerVb.ViewportUnits = BrushMappingMode.Absolute;
+                    outerVb.TileMode = TileMode.Tile;
 
-                    grid.Backdrop.Background = outerVB;
+                    grid.Backdrop.Background = outerVb;
 
                     Border border = grid.Backdrop;
                     border.BorderBrush = Brushes.Blue;
@@ -238,7 +231,7 @@ namespace Autobot.WpfClient
 
         void OnZoomChanged(object sender, EventArgs e)
         {
-            if (ZoomSlider.Value != zoom.Zoom)
+            if (Math.Abs(this.ZoomSlider.Value - this.zoom.Zoom) > 0.1)
             {
                 ZoomSlider.Value = zoom.Zoom;
             }
@@ -246,7 +239,7 @@ namespace Autobot.WpfClient
 
         void OnZoomSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (zoom.Zoom != e.NewValue)
+            if (Math.Abs(this.zoom.Zoom - e.NewValue) > 0.1)
             {
                 zoom.Zoom = e.NewValue;
             }
@@ -268,6 +261,31 @@ namespace Autobot.WpfClient
         void mjpeg_Error(object sender, ErrorEventArgs e)
         {
             MessageBox.Show(e.Message);
+        }
+
+        private void OnRemoteControl(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void OnAutoControl(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void OnConfig(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void OnManualControl(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void OnShowCamera(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
     }
 }
