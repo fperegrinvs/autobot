@@ -40,6 +40,10 @@
     </Reference>
     <Reference Include="PresentationUI, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="ReachFramework" />
+    <Reference Include="SlimDX, Version=4.0.13.43, Culture=neutral, PublicKeyToken=b1b0c32fd1ffe4f9, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\SlimDX.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
@@ -67,6 +71,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="RemoteControl.cs" />
+    <Compile Include="GamepadState.cs" />
     <Compile Include="Gestures\AutoScroll.cs" />
     <Compile Include="Gestures\ExponentialAnimation.cs" />
     <Compile Include="Gestures\MapZoom.cs" />
@@ -78,6 +84,7 @@
     <Compile Include="ITile.cs" />
     <Compile Include="PerfTimer.cs" />
     <Compile Include="QuadTree.cs" />
+    <Compile Include="BotClient.cs" />
     <Compile Include="VirtualCanvas.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -94,19 +101,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Autobot.Common\CarData.cs">
-      <Link>CarData.cs</Link>
+      <Link>Import\CarData.cs</Link>
     </Compile>
     <Compile Include="..\Autobot.Common\SenseData.cs">
-      <Link>SenseData.cs</Link>
+      <Link>Autobot.Common\SenseData.cs</Link>
     </Compile>
     <Compile Include="..\Autobot.Common\Message.cs">
-      <Link>Message.cs</Link>
+      <Link>Autobot.Common\Message.cs</Link>
     </Compile>
     <Compile Include="..\Autobot.Common\MessageType.cs">
-      <Link>MessageType.cs</Link>
+      <Link>Autobot.Common\MessageType.cs</Link>
     </Compile>
     <Compile Include="..\Autobot.Common\StringEventArgs.cs">
-      <Link>StringEventArgs.cs</Link>
+      <Link>Autobot.Common\StringEventArgs.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>

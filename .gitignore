@@ -63,3 +63,4 @@ _ReSharper*/
 /src/Samples/*.zip
 /lib/Contracts
 *.ide
+/*.userprefs

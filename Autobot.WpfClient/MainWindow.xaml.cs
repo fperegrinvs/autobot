@@ -20,6 +20,8 @@ namespace Autobot.WpfClient
     using Autobot.Common;
     using Autobot.WpfClient.Gestures;
 
+    using MjpegProcessor;
+
     /// <summary>
     /// This demo shows the VirtualCanvas managing up to 50,000 random WPF shapes providing smooth scrolling and
     /// zooming while creating those shapes on the fly.  This helps make a WPF canvas that is a lot more
@@ -248,6 +250,24 @@ namespace Autobot.WpfClient
             {
                 zoom.Zoom = e.NewValue;
             }
+        }
+
+        private void ConnectToBotVideo()
+        {
+            MjpegDecoder mjpeg = new MjpegDecoder();
+            mjpeg.FrameReady += mjpeg_FrameReady;
+            mjpeg.Error += mjpeg_Error;
+            mjpeg.ParseStream(new Uri("http://192.168.1.12:8080/videofeed"));
+        }
+
+        private void mjpeg_FrameReady(object sender, FrameReadyEventArgs e)
+        {
+            //pictureBox1.Image = e.Bitmap;
+        }
+
+        void mjpeg_Error(object sender, ErrorEventArgs e)
+        {
+            MessageBox.Show(e.Message);
         }
     }
 }
