@@ -9,13 +9,14 @@
     xmlns:wpfClient="clr-namespace:Autobot.WpfClient"
     Title="Autobot WPF Client" Height="600" Width="800">
     <Grid>
-        <DockPanel Name="InfoPanel" Panel.ZIndex="3" Margin="15">
+        <DockPanel Name="InfoPanel" Panel.ZIndex="3" Margin="15,20,15,16">
             <Label Content="X:" DockPanel.Dock="Left" />
             <Label Name="XLabel" Content="500" DockPanel.Dock="Left" />
             <Label Content="Y:" DockPanel.Dock="Left" />
             <Label Name="YLabel" Content="500" DockPanel.Dock="Left"></Label>
             <Label Content="Direction:" DockPanel.Dock="Left" />
             <Label Name="DirectionLabel" Content="0" DockPanel.Dock="Left"></Label>
+            <Image DockPanel.Dock="Right" Name="CameraImage" HorizontalAlignment="Right" VerticalAlignment="Top" Visibility="Hidden" MaxWidth="320" MaxHeight="240" />
         </DockPanel>
         <DockPanel>
             <Menu IsMainMenu="True" DockPanel.Dock="Top">

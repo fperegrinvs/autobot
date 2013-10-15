@@ -11,6 +11,7 @@ using System.Globalization;
 namespace Autobot.WpfClient
 {
     using System.Collections.Generic;
+    using System.Configuration;
 
     using Autobot.Common;
     using Autobot.WpfClient.Gestures;
@@ -45,7 +46,7 @@ namespace Autobot.WpfClient
             grid.SmallScrollIncrement = new Size(TileWidth + TileMargin, TileHeight + TileMargin);
 
             //Scroller.Content = grid;
- 
+
             Canvas target = grid.ContentCanvas;
             zoom = new MapZoom(target);
             RectangleSelectionGesture rectZoom = new RectangleSelectionGesture(target, this.zoom, ModifierKeys.Control);
@@ -72,14 +73,14 @@ namespace Autobot.WpfClient
             shape.IsFree = true;
             shape.IsVisited = true;
             shape.Sensor = new List<SenseData>();
-            var distances = new byte[]{ 0, 255, 255, 128, 255, 128, 0, 0};
+            var distances = new byte[] { 0, 255, 255, 128, 255, 128, 0, 0 };
             var singleAngle = 360 / distances.Length;
             for (var i = 0; i < distances.Length; i++)
             {
                 shape.Sensor.Add(new SenseData
                                  {
-                                      Angle = singleAngle * i,
-                                      Distance = distances[i]
+                                     Angle = singleAngle * i,
+                                     Distance = distances[i]
                                  });
             }
             grid.AddVirtualChild(shape);
@@ -245,17 +246,26 @@ namespace Autobot.WpfClient
             }
         }
 
+        private MjpegDecoder mjpegStream;
+
+        private void DisconnectBotVideo()
+        {
+            mjpegStream.StopStream();
+            CameraImage.Visibility = Visibility.Hidden;
+        }
+
         private void ConnectToBotVideo()
         {
-            MjpegDecoder mjpeg = new MjpegDecoder();
-            mjpeg.FrameReady += mjpeg_FrameReady;
-            mjpeg.Error += mjpeg_Error;
-            mjpeg.ParseStream(new Uri("http://192.168.1.12:8080/videofeed"));
+            mjpegStream = new MjpegDecoder();
+            mjpegStream.FrameReady += mjpeg_FrameReady;
+            mjpegStream.Error += mjpeg_Error;
+            mjpegStream.ParseStream(new Uri(ConfigurationManager.AppSettings["VideoFeed"]));
+            CameraImage.Visibility = Visibility.Visible;
         }
 
         private void mjpeg_FrameReady(object sender, FrameReadyEventArgs e)
         {
-            //pictureBox1.Image = e.Bitmap;
+            CameraImage.Source = e.BitmapImage;
         }
 
         void mjpeg_Error(object sender, ErrorEventArgs e)
@@ -285,7 +295,17 @@ namespace Autobot.WpfClient
 
         private void OnShowCamera(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            var item = (MenuItem)sender;
+            item.IsChecked = !item.IsChecked;
+
+            if (item.IsChecked)
+            {
+                this.ConnectToBotVideo();
+            }
+            else
+            {
+                this.DisconnectBotVideo();
+            }
         }
 
         private void OnShowObstacles(object sender, RoutedEventArgs e)
