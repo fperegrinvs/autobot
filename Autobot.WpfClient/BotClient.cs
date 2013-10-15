@@ -8,7 +8,6 @@
 
     public class BotClient
     {
-
         /// <summary>
         /// Connection to the autobot 
         /// </summary>
@@ -119,7 +118,7 @@
 
         public void UpdateDirection(short direction, short speed)
         {
-            var message = new Message() { Command = MessageType.Turn, Parameter1 = direction, Parameter2 = speed };
+            var message = new Message { Command = MessageType.Turn, Parameter1 = direction, Parameter2 = speed };
             this.SendMessage(message);
         }
     }

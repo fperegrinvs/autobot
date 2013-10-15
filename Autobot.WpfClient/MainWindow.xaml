@@ -23,7 +23,7 @@
                 <MenuItem Header="_Options">
                     <MenuItem Name="RemoteControlMenuItem" Header="Remote Control" Click="OnRemoteControl" IsChecked="False"/>
                     <MenuItem Name="AutoControlMenuItem" Header="Auto Control" Click="OnAutoControl" IsChecked="False"/>
-                    <MenuItem Header="Manual Controls" Click="OnManualControl" IsChecked="False"/>
+                    <MenuItem Name="ManualControlMenuItem" Header="Manual Controls" Click="OnManualControl" IsChecked="False"/>
                     <MenuItem Header="Show Camera" Click="OnShowCamera" IsChecked="False"/>
                     <MenuItem Header="Show Obstacles" Click="OnShowObstacles" IsChecked="False"/>
                     <MenuItem Header="Config..." Click="OnConfig" />

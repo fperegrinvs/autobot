@@ -16,6 +16,18 @@ namespace Autobot.WpfClient
             thread.Start();
         }
 
+        public void PowerOn()
+        {
+            isOn = true;
+        }
+
+        public void PowerOff()
+        {
+            isOn = false;
+        }
+
+        private bool isOn = false;
+
         private readonly BotClient client;
 
         private readonly GamepadState gamepad;
@@ -25,12 +37,13 @@ namespace Autobot.WpfClient
             var rt = this.gamepad.RightTrigger;
             var lt = this.gamepad.LeftTrigger;
             var ls_x = this.gamepad.LeftStick.Position.X;
-            while (true)
+            while (isOn)
             {
                 this.gamepad.Update();
 
-                if (this.gamepad.LeftStick.Position.X == 0)
+                if (Math.Abs(this.gamepad.LeftStick.Position.X) < 0.1)
                 {
+                    // ReSharper disable CompareOfFloatsByEqualityOperator
                     if (this.gamepad.RightTrigger != rt)
                     {
                         rt = this.gamepad.RightTrigger;
@@ -42,6 +55,7 @@ namespace Autobot.WpfClient
                         lt = this.gamepad.LeftTrigger;
                         client.UpdateSpeed(Convert.ToInt16(Math.Round(lt * -100, 0)));
                     }
+                    // ReSharper restore CompareOfFloatsByEqualityOperator
                 }
                 else
                 {

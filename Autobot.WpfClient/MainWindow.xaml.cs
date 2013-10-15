@@ -38,9 +38,16 @@ namespace Autobot.WpfClient
 
         private const int TotalVisuals = 0;
 
+        /// <summary>
+        /// Bot client
+        /// </summary>
+        private BotClient botClient;
+
         public MainWindow()
         {
             InitializeComponent();
+
+            botClient = new BotClient();
 
             grid = Graph;// new VirtualCanvas();
             grid.SmallScrollIncrement = new Size(TileWidth + TileMargin, TileHeight + TileMargin);
@@ -49,7 +56,7 @@ namespace Autobot.WpfClient
 
             Canvas target = grid.ContentCanvas;
             zoom = new MapZoom(target);
-            RectangleSelectionGesture rectZoom = new RectangleSelectionGesture(target, this.zoom, ModifierKeys.Control);
+            var rectZoom = new RectangleSelectionGesture(target, this.zoom, ModifierKeys.Control);
             rectZoom.ZoomSelection = true;
             zoom.ZoomChanged += this.OnZoomChanged;
 
@@ -257,13 +264,13 @@ namespace Autobot.WpfClient
         private void ConnectToBotVideo()
         {
             mjpegStream = new MjpegDecoder();
-            mjpegStream.FrameReady += mjpeg_FrameReady;
+            mjpegStream.FrameReady += this.MjpegFrameReady;
             mjpegStream.Error += mjpeg_Error;
             mjpegStream.ParseStream(new Uri(ConfigurationManager.AppSettings["VideoFeed"]));
             CameraImage.Visibility = Visibility.Visible;
         }
 
-        private void mjpeg_FrameReady(object sender, FrameReadyEventArgs e)
+        private void MjpegFrameReady(object sender, FrameReadyEventArgs e)
         {
             CameraImage.Source = e.BitmapImage;
         }
@@ -273,13 +280,45 @@ namespace Autobot.WpfClient
             MessageBox.Show(e.Message);
         }
 
+        public RemoteControl RemoteControl { get; set; }
+
         private void OnRemoteControl(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            // if using remote control and autocontrol is enabled, disable it
+            if (!RemoteControlMenuItem.IsChecked && AutoControlMenuItem.IsChecked)
+            {
+                this.OnAutoControl(this, e);
+            }
+
+            RemoteControlMenuItem.IsChecked = !RemoteControlMenuItem.IsChecked;
+
+            if (this.RemoteControlMenuItem.IsChecked)
+            {
+                this.RemoteControl = new RemoteControl(this.botClient);
+                this.RemoteControl.PowerOn();
+            }
+            else
+            {
+                this.RemoteControl.PowerOff();
+                this.RemoteControl = null;
+            }
         }
 
         private void OnAutoControl(object sender, RoutedEventArgs e)
         {
+            if (!AutoControlMenuItem.IsChecked)
+            {
+                if (ManualControlMenuItem.IsChecked)
+                {
+                    this.OnManualControl(this, e);
+                }
+
+                if (RemoteControlMenuItem.IsChecked)
+                {
+                    this.OnRemoteControl(this, e);
+                }
+            }
+
             throw new NotImplementedException();
         }
 
