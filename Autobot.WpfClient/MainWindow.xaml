@@ -9,15 +9,46 @@
     xmlns:wpfClient="clr-namespace:Autobot.WpfClient"
     Title="Autobot WPF Client" Height="600" Width="800">
     <Grid>
-        <DockPanel Name="InfoPanel" Panel.ZIndex="3" Margin="15,20,15,16">
-            <Label Content="X:" DockPanel.Dock="Left" />
-            <Label Name="XLabel" Content="500" DockPanel.Dock="Left" />
-            <Label Content="Y:" DockPanel.Dock="Left" />
-            <Label Name="YLabel" Content="500" DockPanel.Dock="Left"></Label>
-            <Label Content="Direction:" DockPanel.Dock="Left" />
-            <Label Name="DirectionLabel" Content="0" DockPanel.Dock="Left"></Label>
-            <Image DockPanel.Dock="Right" Name="CameraImage" HorizontalAlignment="Right" VerticalAlignment="Top" Visibility="Hidden" MaxWidth="320" MaxHeight="240" />
-        </DockPanel>
+        <Grid Name="InfoPanel" Panel.ZIndex="3" Margin="15,20,15,30">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition Width="100"/>
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition/>
+                <RowDefinition Height="100" />
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+                <Label Content="X:" />
+                <Label Name="XLabel" Content="500" />
+                <Label Content="Y:" />
+                <Label Name="YLabel" Content="500"></Label>
+                <Label Content="Direction:" />
+                <Label Name="DirectionLabel" Content="0"></Label>
+            </StackPanel>
+            <Image Grid.ColumnSpan="2" Grid.Row="0" Grid.Column="2" Name="CameraImage" HorizontalAlignment="Right" VerticalAlignment="Top" Visibility="Hidden" MaxWidth="320" MaxHeight="240" />
+            <Grid Name="Controls" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" Visibility="Hidden">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="33"/>
+                    <ColumnDefinition Width="33"/>
+                    <ColumnDefinition Width="33"/>
+                    <ColumnDefinition Width="100"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Button Grid.Column="1" Content="Up" Click="OnUp" />
+                <Button Grid.Column="1" Grid.Row="2" Content="Down" Click="OnDown" />
+                <Button Grid.Column="0" Grid.Row="1" Content="Left" Click="OnLeft" />
+                <Button Grid.Column="2" Grid.Row="1" Content="Right" Click="OnRight" />
+                <Button Grid.Column="3" Grid.Row="0" Content="Sense" Grid.RowSpan="2" Width="33" Click="OnSense" />
+            </Grid>
+        </Grid>
         <DockPanel>
             <Menu IsMainMenu="True" DockPanel.Dock="Top">
                 <MenuItem Header="_Options">
