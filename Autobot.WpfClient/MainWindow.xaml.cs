@@ -354,27 +354,27 @@ namespace Autobot.WpfClient
 
         private void OnUp(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            botClient.Forward();
         }
 
         private void OnDown(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            botClient.Back();
         }
 
         private void OnLeft(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            botClient.Left();
         }
 
         private void OnRight(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            botClient.Right();
         }
 
         private void OnSense(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            botClient.UpdateSenseData();
         }
     }
 }

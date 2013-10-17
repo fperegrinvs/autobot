@@ -1,8 +1,10 @@
 ﻿namespace Autobot.WpfClient
 {
     using System;
+    using System.Collections.Generic;
     using System.Net;
     using System.Net.Sockets;
+    using System.Windows.Documents;
 
     using Autobot.Common;
 
@@ -18,6 +20,12 @@
         /// </summary>
         public byte[] Data { get; set; }
 
+
+        /// <summary>
+        /// Last sese reading
+        /// </summary>
+        public List<SenseData> SenseData { get; set; }
+ 
         /// <summary>
         /// Connect to the bot server
         /// </summary>
@@ -119,6 +127,36 @@
         public void UpdateDirection(short direction, short speed)
         {
             var message = new Message { Command = MessageType.Turn, Parameter1 = direction, Parameter2 = speed };
+            this.SendMessage(message);
+        }
+
+        public void Forward(int rotations = 1, short speed = 80)
+        {
+            var message = new Message { Command = MessageType.Forward, Parameter1 = rotations, Parameter2 = speed };
+            this.SendMessage(message);
+        }
+
+        public void Back(int rotations = 1, short speed = 80)
+        {
+            var message = new Message { Command = MessageType.Back, Parameter1 = rotations, Parameter2 = speed };
+            this.SendMessage(message);
+        }
+
+        public void Left(int rotations = 1, short speed = 80)
+        {
+            var message = new Message { Command = MessageType.Left, Parameter1 = rotations, Parameter2 = speed };
+            this.SendMessage(message);
+        }
+
+        public void UpdateSenseData(int angle = 360)
+        {
+            var message = new Message { Command = MessageType.Forward, Parameter1 = angle };
+            this.SendMessage(message);
+        }
+
+        public void Right(int rotations = 1, short speed = 80)
+        {
+            var message = new Message { Command = MessageType.Forward, Parameter1 = rotations, Parameter2 = speed };
             this.SendMessage(message);
         }
     }
