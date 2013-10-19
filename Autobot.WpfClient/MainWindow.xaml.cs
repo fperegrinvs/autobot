@@ -318,8 +318,6 @@ namespace Autobot.WpfClient
                     this.OnRemoteControl(this, e);
                 }
             }
-
-            throw new NotImplementedException();
         }
 
         private void OnConfig(object sender, RoutedEventArgs e)
@@ -327,9 +325,25 @@ namespace Autobot.WpfClient
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Togle manual controls
+        /// </summary>
         private void OnManualControl(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            if (this.Controls.Visibility == Visibility.Hidden)
+            {
+                this.Controls.Visibility = Visibility.Visible;
+
+                // turn automatic control off if necessary
+                if (this.AutoControlMenuItem.IsChecked)
+                {
+                    this.OnAutoControl(sender, e);
+                }
+            }
+            else
+            {
+                this.Controls.Visibility = Visibility.Hidden;
+            }
         }
 
         private void OnShowCamera(object sender, RoutedEventArgs e)
