@@ -71,6 +71,14 @@
                 item.Distance = BitConverter.ToSingle(data, startPosition + DistanceOffset);
                 item.PositionX = BitConverter.ToSingle(data, startPosition + PositionXOffset);
                 item.PositionY = BitConverter.ToSingle(data, startPosition + PositionYOffset);
+
+                // ReSharper disable CompareOfFloatsByEqualityOperator
+                if (item.Angle == 0 && item.Distance == 0 && item.PositionX == 0 && item.PositionY == 0)
+                {
+                    break;
+                }
+                // ReSharper restore CompareOfFloatsByEqualityOperator
+
                 result.Add(item);
             }
 

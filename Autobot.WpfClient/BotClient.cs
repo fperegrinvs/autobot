@@ -2,9 +2,9 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Configuration;
     using System.Net;
     using System.Net.Sockets;
-    using System.Windows.Documents;
 
     using Autobot.Common;
 
@@ -16,30 +16,42 @@
         public Socket ClientSocket { get; set; }
 
         /// <summary>
-        /// Menssage data
-        /// </summary>
-        public byte[] Data { get; set; }
-
-
-        /// <summary>
         /// Last sese reading
         /// </summary>
         public List<SenseData> SenseData { get; set; }
- 
+
+        /// <summary>
+        /// one connection per client
+        /// </summary>
+        private readonly object connectLock = new object();
+
         /// <summary>
         /// Connect to the bot server
         /// </summary>
         /// <param name="ipStr">ip address as string</param>
-        public void Connect(string ipStr)
+        public Socket Connect(string ipStr)
         {
             IPAddress ipAddress = IPAddress.Parse(ipStr);
-            ClientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-
+            
+            if (ClientSocket == null)
+            {
+                ClientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            }
+            
             //Server is listening on port 1000
             var ipEndPoint = new IPEndPoint(ipAddress, 5429);
 
-            //Connect to the server
-            ClientSocket.BeginConnect(ipEndPoint, this.OnConnect, null);
+
+            lock (connectLock)
+            {
+                if (!ClientSocket.Connected)
+                {
+                    //Connect to the server
+                    ClientSocket.Connect(ipEndPoint);
+                }
+            }
+
+            return ClientSocket;
         }
 
         /// <summary>
@@ -49,36 +61,35 @@
         private void SendMessage(Message message)
         {
             var bytes = message.ToByte();
+
+            if (ClientSocket == null || !ClientSocket.Connected)
+            {
+                this.Connect(ConfigurationManager.AppSettings["ServerAddress"]);
+
+                if (ClientSocket == null || !ClientSocket.Connected)
+                {
+                    throw new Exception();
+                }
+            }
+
             ClientSocket.BeginSend(bytes, 0, bytes.Length, SocketFlags.None, this.OnSend, null);
         }
 
-        /// <summary>
-        /// Connect event
-        /// </summary>
-        /// <param name="ar">async result</param>
-        private void OnConnect(IAsyncResult ar)
-        {
-            var message = new Message();
-            message.Command = MessageType.RemoteControl;
-            ClientSocket.EndConnect(ar);
-            var bytes = message.ToByte();
-            ClientSocket.BeginSend(bytes, 0, bytes.Length, SocketFlags.None, this.OnSend, null);
-        }
 
         private void OnReceive(IAsyncResult ar)
         {
             ClientSocket.EndReceive(ar);
 
-            var msgReceived = new Message(Data);
+            var msgReceived = new Message(((Message)ar.AsyncState).Data);
 
             //Accordingly process the message received
             switch (msgReceived.Command)
             {
                 case MessageType.Sense:
-                {
-                    SenseData = Common.SenseData.FromBytes(msgReceived.Data);
-                    break;
-                }
+                    {
+                        SenseData = Common.SenseData.FromBytes(msgReceived.Data);
+                        break;
+                    }
                 case MessageType.Hello:
                     //this.SendAlert("Connected");
                     //this.RunOnUiThread(() =>
@@ -95,15 +106,6 @@
                     break;
 
             }
-
-            Data = new byte[1024];
-
-            ClientSocket.BeginReceive(Data,
-                                      0,
-                                      Data.Length,
-                                      SocketFlags.None,
-                                      this.OnReceive,
-                                      null);
         }
 
         /// <summary>
@@ -113,14 +115,16 @@
         private void OnSend(IAsyncResult ar)
         {
             ClientSocket.EndSend(ar);
-            Data = new byte[1024];
+
+            var msg = new Message { Data = new byte[1024] };
+
             //Start listening to the data asynchronously
-            ClientSocket.BeginReceive(Data,
+            ClientSocket.BeginReceive(msg.Data,
                                        0,
-                                       Data.Length,
+                                        msg.Data.Length,
                                        SocketFlags.None,
                                        this.OnReceive,
-                                       null);
+                                       msg);
         }
 
         public void UpdateSpeed(short speed)
