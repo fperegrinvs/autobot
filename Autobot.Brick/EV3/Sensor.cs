@@ -1172,7 +1172,7 @@ namespace Autotob.Brick.EV3
 	/// <summary>
 	/// Class for the EV3 and NXT ultrasonic sensor
 	/// </summary>
-	class UltrasonicSensor : Sensor{
+	public class UltrasonicSensor : Sensor{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="UltrasonicSensor"/> class.
 		/// </summary>

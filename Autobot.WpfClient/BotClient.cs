@@ -74,6 +74,11 @@
             //Accordingly process the message received
             switch (msgReceived.Command)
             {
+                case MessageType.Sense:
+                {
+                    SenseData = Common.SenseData.FromBytes(msgReceived.Data);
+                    break;
+                }
                 case MessageType.Hello:
                     //this.SendAlert("Connected");
                     //this.RunOnUiThread(() =>
@@ -150,7 +155,7 @@
 
         public void UpdateSenseData(int angle = 360)
         {
-            var message = new Message { Command = MessageType.Forward, Parameter1 = angle };
+            var message = new Message { Command = MessageType.Sense, Parameter1 = angle };
             this.SendMessage(message);
         }
 

@@ -8,11 +8,11 @@ namespace Autobot.Server
 
     using Autotob.Brick.EV3;
 
-    public class Tank : Brick<IRSensor, Sensor, Sensor, Sensor, CarData>
+    public class Tank : Brick<UltrasonicSensor, Sensor, Sensor, Sensor, CarData>
     {
         public Tank(string connection) : base(connection)
         {
-            
+            this.Sensor1.Mode = UltrasonicMode.Centimeter;
         }
     }
 
