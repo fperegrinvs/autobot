@@ -12,7 +12,6 @@ namespace Autobot.Server
     {
         public Tank(string connection) : base(connection)
         {
-            this.Sensor1.Mode = UltrasonicMode.Centimeter;
         }
     }
 

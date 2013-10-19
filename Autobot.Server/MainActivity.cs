@@ -66,6 +66,9 @@
                 // connect to lego
                 this.Bot.Connection.Open();
 
+				// sensor 1
+				this.Bot.Sensor1.Mode = UltrasonicMode.Centimeter;
+
                 this.Bot.MotorA.ResetTacho();
             }
             catch (Exception e)
